@@ -8,7 +8,7 @@ import {
   type RecordLogItem,
 } from "ts-fsrs";
 
-/** Shared FSRS scheduler (FSRS-5 defaults via generatorParameters inside `fsrs`). */
+/** Shared SRS scheduler (FSRS-5 defaults via generatorParameters inside `fsrs`). */
 export const srsScheduler = fsrs();
 
 export type ProgressRow = {
@@ -25,7 +25,7 @@ export type ProgressRow = {
   updated_at: string;
 };
 
-/** UI scores map to FSRS grades (Again=1 … Easy=4). */
+/** UI scores map to SRS Rating (Again=1 … Easy=4). */
 export function ratingFromScore(score: 1 | 2 | 3 | 4): Grade {
   const map: Record<1 | 2 | 3 | 4, Grade> = {
     1: Rating.Again,
@@ -67,7 +67,7 @@ export function scheduleReview(
   return srsScheduler.next(card, now, grade);
 }
 
-/** Build Supabase upsert payload from the card returned by FSRS. */
+/** Build Supabase upsert payload from the card returned by the SRS algorithm. */
 export function cardToProgressPayload(
   userId: string,
   wordId: string,
