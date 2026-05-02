@@ -78,25 +78,25 @@ export default async function DashboardPage() {
             {decks.map((deck) => (
               <li key={deck.id}>
                 <article className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-5 ring-1 ring-white/5">
-                  <div className="flex flex-1 items-start gap-3">
-                    <span className="text-3xl leading-none" aria-hidden>
-                      {deckEmoji(deck.slug)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="font-semibold text-zinc-50">{deck.title}</h2>
-                      {deck.description ? (
-                        <p className="mt-1 line-clamp-2 text-sm text-zinc-500">
-                          {deck.description}
-                        </p>
-                      ) : null}
+                  <div className="flex flex-1 items-start justify-between gap-3">
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                      <span className="text-3xl leading-none" aria-hidden>
+                        {deckEmoji(deck.slug)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="font-semibold text-zinc-50">{deck.title}</h2>
+                        {deck.description ? (
+                          <p className="mt-1 line-clamp-2 text-sm text-zinc-500">
+                            {deck.description}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-5">
                     <Link
-                      href={`/study?deck=${encodeURIComponent(deck.id)}`}
-                      className="flex w-full items-center justify-center rounded-lg bg-zinc-100 py-2.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
+                      href={`/study?deck=${deck.id}`}
+                      className="shrink-0 rounded-md bg-zinc-600 px-3 py-1.5 text-xs font-medium text-zinc-100 transition hover:bg-zinc-500"
                     >
-                      Study
+                      Studeren →
                     </Link>
                   </div>
                 </article>
