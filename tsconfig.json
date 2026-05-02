@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/lib/supabase": ["./lib/supabase.ts"]
     }
   },
   "include": [
