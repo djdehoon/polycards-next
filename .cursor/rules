@@ -1,0 +1,111 @@
+# ============================================================
+# POLYCARDS — CURSOR AGENT RULES
+# Project: Flashcard app for language learning
+# Stack: Next.js 14 (App Router) + TypeScript + Tailwind CSS
+# Backend: Supabase | Deploy: Vercel
+# Author: djdehoon | Repo: github.com/djdehoon/polycards-next
+# ============================================================
+
+## 🎯 PROJECT CONTEXT
+You are building "PolyCards" — a flashcard app for language learners.
+Users study vocabulary using Spaced Repetition (SM-2 algorithm).
+The app has 100 Ukrainian words in 10 decks, stored in Supabase.
+Stack: Next.js 14 + TypeScript + Tailwind CSS + Supabase + Vercel.
+
+## 🗄️ DATABASE (Supabase)
+Tables:
+- public.decks        (id, slug, title, sort_order)
+- public.words        (id, deck_id, term, translation, sort_order)
+- public.user_progress (id, user_id, word_id, ease_factor, interval_days, next_review_at)
+
+Auth: Supabase Auth (email + password)
+RLS: Enabled on user_progress (user sees only their own rows)
+
+## 🏗️ ARCHITECTURE RULES
+
+### Next.js App Router (STRICT)
+- ALWAYS use App Router (src/app/) — NEVER use pages/ directory
+- Server Components by default — only add "use client" when necessary
+- Use Server Actions for form submissions — NOT API routes for simple forms
+- API routes only for: external webhooks, complex server logic
+- Use Next.js metadata API for SEO — NOT next/head
+- Use next/image for ALL images — NEVER <img> tags
+- Use next/link for ALL internal navigation — NEVER <a> tags
+
+### TypeScript (STRICT)
+- ALWAYS use TypeScript — never plain JavaScript
+- No "any" types — use proper interfaces
+- All shared types go in src/types/index.ts
+- Prefer interfaces over type aliases for objects
+
+### Supabase (STRICT)
+- Use @supabase/ssr package — NOT deprecated auth-helpers
+- Browser client: src/lib/supabase/client.ts
+- Server client: src/lib/supabase/server.ts
+- NEVER import browser client in Server Components
+- NEVER import server client in Client Components
+
+### Styling
+- Tailwind CSS utility classes only — NO inline styles
+- NO CSS modules
+- Dark background theme (like the existing Netlify version)
+
+## 📁 FILE STRUCTURE (MANDATORY)
+src/
+├── app/
+│   ├── (auth)/
+│   │   ├── layout.tsx
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── auth/callback/route.ts
+│   ├── dashboard/page.tsx
+│   ├── study/[slug]/page.tsx
+│   ├── browse/page.tsx
+│   └── stats/page.tsx
+├── components/
+│   ├── ui/
+│   ├── flashcard/
+│   └── shared/
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── srs.ts
+│   └── utils.ts
+├── hooks/
+└── types/
+    └── index.ts
+middleware.ts  ← root level
+
+## 🗺️ ROADMAP STATUS
+- Block 1: ✅ Project setup (Next.js + Vercel + Supabase connected)
+- Block 2: ✅ Database + seed data (10 decks, 100 words)
+- Block 3: 🏗️ Auth (login, signup, middleware) ← CURRENT
+- Block 4: ⏳ Study mode (flashcard UI + SM-2)
+- Block 5: ⏳ Browse + Stats pages
+- Block 6: ⏳ Polish + responsive
+
+## ✅ ALWAYS DO
+- Check existing files before creating new ones
+- Tell me which files you will CREATE, MODIFY, and NOT TOUCH before starting
+- Keep components small and focused (max ~100 lines)
+- Add loading.tsx for routes with async data
+- Use async/await — never .then().catch()
+
+## ❌ NEVER DO
+- Use "any" TypeScript type
+- Use pages/ directory
+- Use deprecated @supabase/auth-helpers
+- Touch unrelated files
+- Over-engineer simple features
+
+## 📝 COMMIT FORMAT
+feat: add new feature
+fix: bug fix
+chore: config/dependencies
+refactor: restructure without behavior change
+style: styling only
+
+## 🔔 TASK COMPLETION
+After completing ANY task, always end your final message with:
+"✅ DONE — Check required"
