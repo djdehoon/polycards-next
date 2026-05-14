@@ -26,14 +26,7 @@ export function LandingPage({ isLoggedIn }: Props) {
           >
             Why it works
           </Link>
-          {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
-            >
-              Dashboard
-            </Link>
-          ) : (
+          {!isLoggedIn ? (
             <>
               <Link
                 href="/login"
@@ -48,7 +41,7 @@ export function LandingPage({ isLoggedIn }: Props) {
                 Sign up
               </Link>
             </>
-          )}
+          ) : null}
         </nav>
       </header>
 
@@ -67,7 +60,7 @@ export function LandingPage({ isLoggedIn }: Props) {
           <p className="mx-auto mt-5 max-w-2xl text-lg text-zinc-400 sm:text-xl">
             Short sessions on a steady schedule—built for retention, not cramming.
             {isLoggedIn
-              ? " Use the header to open your dashboard when you are ready."
+              ? " Choose a language below to practice, or read Why it works in the header."
               : " Sign in for your dashboard, or open Why it works in the header to read about the method."}
           </p>
         </section>
