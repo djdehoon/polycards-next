@@ -11,8 +11,8 @@ You are building "PolyCards" — a flashcard app for language learners.
 Users study vocabulary using Spaced Repetition (SM-2 algorithm).
 The app has 100 Ukrainian words in 10 decks, stored in Supabase.
 Stack: Next.js 14 + TypeScript + Tailwind CSS + Supabase + Vercel.
-Current version: v0.2.1 (Blocks 1-5 complete: Setup, Auth, Study, SRS)
-Next: Block 6 (Dashboard, Browse, Stats, Navigation)
+Current version: v0.2.3 (Block 6 shipped: Dashboard, Browse, Stats, Navigation)
+Next: Block 7 (Polish + responsive)
 
 ## 🗄️ DATABASE (Supabase)
 Tables:
@@ -87,8 +87,8 @@ middleware.ts  ← root level
 - Block 3: ✅ Auth (login, signup, middleware)
 - Block 4: ✅ Study mode (flashcard UI + SM-2)
 - Block 5: ✅ SRS Engine (ts-fsrs integration)
-- Block 6: 🏗️ Dashboard + Browse + Stats + Navigation ← CURRENT
-- Block 7: ⏳ Polish + responsive
+- Block 6: ✅ Dashboard + Browse + Stats + Navigation
+- Block 7: ⏳ Polish + responsive ← CURRENT
 
 ## ✅ ALWAYS DO
 - Check existing files before creating new ones
@@ -110,6 +110,7 @@ vX.Y.Z type(scope): Imperative description (English, no period, ≤50 chars)
 Types: feat ✨ | fix 🐛 | refactor ♻️ | chore 🔧 | style 🎨 | docs 📝 | perf ⚡
 
 Examples:
+  v0.2.3 chore: Dashboard complete
   v0.2.2 feat(block-6): Add dashboard, browse, stats pages
   v0.2.1 feat(auth): Add login/signup flow
   v0.2.0 feat(study): Add flip-card UI with SRS rating
