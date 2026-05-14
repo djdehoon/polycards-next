@@ -4,11 +4,7 @@ import Link from "next/link";
 import { ChooseLanguage } from "./ChooseLanguage";
 import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
 
-type Props = {
-  isLoggedIn: boolean;
-};
-
-export function LandingPage({ isLoggedIn }: Props) {
+export function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 font-['-apple-system','BlinkMacSystemFont','Segoe_UI',Roboto,sans-serif] text-zinc-100">
       <div
@@ -26,22 +22,6 @@ export function LandingPage({ isLoggedIn }: Props) {
           >
             Why it works
           </Link>
-          {!isLoggedIn ? (
-            <>
-              <Link
-                href="/login"
-                className="text-zinc-400 transition hover:text-white"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-lg bg-zinc-100 px-3 py-1.5 font-medium text-zinc-950 transition hover:bg-white"
-              >
-                Sign up
-              </Link>
-            </>
-          ) : null}
         </nav>
       </header>
 
@@ -59,9 +39,7 @@ export function LandingPage({ isLoggedIn }: Props) {
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-zinc-400 sm:text-xl">
             Short sessions on a steady schedule—built for retention, not cramming.
-            {isLoggedIn
-              ? " Choose a language below to practice, or read Why it works in the header."
-              : " Sign in for your dashboard, or open Why it works in the header to read about the method."}
+            Choose a language below to practice, or read Why it works in the header.
           </p>
         </section>
 
