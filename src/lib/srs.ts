@@ -22,6 +22,7 @@ export type ProgressRow = {
   lapses: number;
   due_date: string;
   last_reviewed_at: string | null;
+  last_rating: number | null;
   updated_at: string;
 };
 
@@ -73,6 +74,7 @@ export function cardToProgressPayload(
   wordId: string,
   card: Card,
   reviewedAt: Date,
+  lastRating: 1 | 2 | 3 | 4,
 ): {
   user_id: string;
   word_id: string;
@@ -84,6 +86,7 @@ export function cardToProgressPayload(
   due_date: string;
   last_reviewed_at: string;
   updated_at: string;
+  last_rating: number;
 } {
   return {
     user_id: userId,
@@ -96,5 +99,6 @@ export function cardToProgressPayload(
     due_date: card.due.toISOString(),
     last_reviewed_at: reviewedAt.toISOString(),
     updated_at: reviewedAt.toISOString(),
+    last_rating: lastRating,
   };
 }
