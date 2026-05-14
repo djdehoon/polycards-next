@@ -12,12 +12,20 @@ export type ChooseLanguageLink = {
   useNextLink: boolean;
 };
 
+/** Rich card copy for the marketing "Choose Language" grid (omit for languages excluded from that grid). */
+export type ChooseLanguageDisplay = {
+  subtitle: string;
+  status: "live" | "coming_soon";
+  statsLine: string;
+};
+
 export type LandingLanguage = {
   id: string;
   label: string;
   flag: string;
   decks: LandingDeck[];
   chooseLink: ChooseLanguageLink;
+  chooseLanguageDisplay?: ChooseLanguageDisplay;
 };
 
 function threeDecks(langLabel: string, prefix: string): LandingDeck[] {
@@ -40,6 +48,11 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       buttonText: "Start Learning",
       useNextLink: true,
     },
+    chooseLanguageDisplay: {
+      subtitle: "Українська ↔ English",
+      status: "live",
+      statsLine: "100 words • 10 categories",
+    },
   },
   {
     id: "spanish",
@@ -51,6 +64,11 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       target: "_blank",
       buttonText: "Open Dictionary",
       useNextLink: false,
+    },
+    chooseLanguageDisplay: {
+      subtitle: "Español ↔ English",
+      status: "live",
+      statsLine: "100 words • 10 categories",
     },
   },
   {
@@ -64,6 +82,11 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       buttonText: "Open Dictionary",
       useNextLink: false,
     },
+    chooseLanguageDisplay: {
+      subtitle: "Português ↔ English",
+      status: "live",
+      statsLine: "100 words • 10 categories",
+    },
   },
   {
     id: "polish",
@@ -76,6 +99,11 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       buttonText: "Open Dictionary",
       useNextLink: false,
     },
+    chooseLanguageDisplay: {
+      subtitle: "Polski ↔ English",
+      status: "live",
+      statsLine: "100 words • 10 categories",
+    },
   },
   {
     id: "chinese",
@@ -87,6 +115,11 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       target: "_blank",
       buttonText: "Open Dictionary",
       useNextLink: false,
+    },
+    chooseLanguageDisplay: {
+      subtitle: "中文 ↔ English",
+      status: "live",
+      statsLine: "100 words • 10 categories",
     },
   },
   {
