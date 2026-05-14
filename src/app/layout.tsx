@@ -33,7 +33,7 @@ function resolveSiteUrl(): string {
 
 const siteUrl = resolveSiteUrl();
 const metadataBase = new URL(siteUrl);
-const ogImageUrl = new URL("/og-image.png", metadataBase).href;
+const ogImageUrl = new URL("/og-image.png?v=2", metadataBase).href;
 const ogPageUrl = new URL("/", metadataBase).href;
 
 const ogTitle = "PolyCards - Learn Languages That Stick";
