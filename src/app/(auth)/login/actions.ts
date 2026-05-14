@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export type LoginFormState = {
@@ -13,6 +14,7 @@ export async function loginAction(
 ): Promise<LoginFormState> {
   const email = formData.get("email");
   const password = formData.get("password");
+  const nextRaw = formData.get("next");
 
   if (typeof email !== "string" || typeof password !== "string") {
     return { error: "Invalid form submission." };
@@ -33,5 +35,6 @@ export async function loginAction(
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  const next = safeInternalPath(nextRaw);
+  redirect(next ?? "/dashboard");
 }

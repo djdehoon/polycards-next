@@ -10,6 +10,7 @@ import {
   utcTodayString,
 } from "@/lib/stats-helpers";
 import { logoutAction } from "./actions";
+import { ScrollToDeck } from "./scroll-to-deck";
 
 type Deck = {
   id: string;
@@ -26,7 +27,15 @@ function deckEmoji(slug: string): string {
   return map[slug] ?? "📚";
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deck?: string }>;
+}) {
+  const sp = await searchParams;
+  const focusSlug =
+    typeof sp.deck === "string" && sp.deck.length > 0 ? sp.deck : null;
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -45,6 +54,10 @@ export default async function DashboardPage() {
 
   const decks = !error && rows ? rows : [];
   const showEmpty = !error && decks.length === 0;
+  const focusDeck =
+    focusSlug != null
+      ? (decks.find((d) => d.slug === focusSlug) ?? null)
+      : null;
   const now = new Date();
   const todayUtc = utcTodayString(now);
 
@@ -123,6 +136,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex-1 px-4 py-8">
       <main className="mx-auto max-w-3xl">
+        {focusDeck ? <ScrollToDeck slug={focusDeck.slug} /> : null}
         <header className="mb-8 flex flex-col gap-6 border-b border-zinc-800 pb-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
@@ -204,10 +218,17 @@ export default async function DashboardPage() {
           </div>
         ) : null}
 
+        {focusSlug != null && focusDeck == null && decks.length > 0 ? (
+          <p className="mb-4 text-sm text-amber-400/90" role="status">
+            Geen deck met slug &quot;{focusSlug}&quot; in je bibliotheek. Kies
+            hieronder een deck.
+          </p>
+        ) : null}
+
         {!error && decks.length > 0 ? (
           <div className="mb-10">
             <Link
-              href="/study"
+              href={focusDeck ? `/study?deck=${focusDeck.id}` : "/study"}
               className="inline-flex rounded-lg bg-zinc-100 px-5 py-2.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
             >
               Start studeren
@@ -236,7 +257,14 @@ export default async function DashboardPage() {
 
               return (
                 <li key={deck.id}>
-                  <article className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-5 ring-1 ring-white/5">
+                  <article
+                    id={`deck-${deck.slug}`}
+                    className={`flex h-full flex-col rounded-xl border bg-zinc-900 p-5 ring-1 ring-white/5 ${
+                      focusDeck?.id === deck.id
+                        ? "border-violet-500/60 ring-2 ring-violet-500/40"
+                        : "border-zinc-800"
+                    }`}
+                  >
                     <div className="flex flex-1 items-start gap-3">
                       <span className="text-3xl leading-none" aria-hidden>
                         {deckEmoji(deck.slug)}

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🇨🇳 PolyCards Chinese</title>
+  <style>
+    :root {
+      --primary: #de2910;
+      --primary-light: #FFD700;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --text: #ffffff;
+      --text2: #b0b0b0;
+      --border: #2d2d44;
+      --blue: #4a9eff;
+      --green: #4caf50;
+      --orange: #ff9800;
+      --red: #f44336;
+      --radius: 8px;
+      --spacing: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', Roboto, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--blue), #FFD700);
+      border-radius: 10px;
+      border: 2px solid var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #3a8eef, #ffc700);
+      box-shadow: 0 0 12px rgba(74, 158, 255, 0.5);
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .logo-name {
+      color: var(--text);
+    }
+
+    .logo-country {
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    .nav-version {
+      color: var(--text2);
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-back {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-back:hover {
+      background: #3a8eef;
+      transform: translateY(-2px);
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* PAGES */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    /* DECKS PAGE */
+    .deck-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .deck-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .deck-card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 8px 24px rgba(74, 158, 255, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .deck-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .deck-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .deck-stats {
+      font-size: 0.85rem;
+      color: var(--text2);
+    }
+
+    /* STUDY PAGE */
+    .study-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+    }
+
+    .study-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 0.9rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-label {
+      color: var(--text2);
+    }
+
+    .stat-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* FLASHCARD */
+    .flashcard-wrap {
+      perspective: 1200px;
+      margin-bottom: 24px;
+    }
+
+    .flashcard {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      border: 2px solid var(--border);
+    }
+
+    .flashcard-front {
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.1), rgba(255, 215, 0, 0.05));
+      color: var(--text);
+    }
+
+    .flashcard-back {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(74, 158, 255, 0.05));
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-tag {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .flashcard-emoji {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .flashcard-word {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--blue);
+    }
+
+    .flashcard-translit {
+      font-size: 1rem;
+      color: var(--text2);
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .flashcard-sentence {
+      font-size: 0.95rem;
+      color: var(--text2);
+      margin: 16px 0;
+      line-height: 1.5;
+    }
+
+    .flashcard-hint {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-top: 16px;
+      font-style: italic;
+    }
+
+    .speak-btn {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+
+    .speak-btn:hover {
+      background: #3a8eef;
+    }
+
+    .show-ans-btn {
+      width: 100%;
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s;
+      margin-bottom: 16px;
+    }
+
+    .show-ans-btn:hover {
+      background: #45a049;
+    }
+
+    /* RATING BUTTONS */
+    .rating-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .rating-btn {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .rating-btn:hover {
+      border-color: var(--blue);
+      background: var(--surface);
+    }
+
+    .rating-btn.again { background: rgba(244, 67, 54, 0.2); border-color: #f44336; }
+    .rating-btn.hard { background: rgba(255, 152, 0, 0.2); border-color: #ff9800; }
+    .rating-btn.good { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; }
+    .rating-btn.easy { background: rgba(29, 78, 216, 0.2); border-color: #1d4ed8; }
+
+    /* BROWSE PAGE */
+    .browse-search {
+      margin-bottom: 24px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .cards-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cards-table th {
+      background: var(--surface2);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .cards-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cards-table tr:hover {
+      background: var(--surface2);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      main {
+        padding: 24px 16px;
+      }
+
+      .page-title {
+        font-size: 1.4rem;
+      }
+
+      .flashcard {
+        height: 250px;
+      }
+
+      .flashcard-word {
+        font-size: 2rem;
+      }
+
+      .rating-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .deck-list {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <svg width="18" height="13" viewBox="0 0 3 2" style="display:inline-block;vertical-align:middle;margin-right:6px;">
+      <rect fill="#DE2910" width="3" height="2"/>
+      <circle cx="1.5" cy="1" r="0.4" fill="#FFD700"/>
+    </svg>
+    <span class="logo-name">PolyCards</span>
+    <span class="logo-country">Chinese</span>
+    <span class="nav-version">v0.20</span>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn-back" onclick="window.location.href='indexhome.html'">← Back to Languages</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- DECKS PAGE -->
+  <div class="page active" id="page-decks">
+    <h1 class="page-title">📚 My Decks</h1>
+    <div class="deck-list" id="deck-list"></div>
+  </div>
+
+  <!-- STUDY PAGE -->
+  <div class="page" id="page-study">
+    <h1 class="page-title">Study</h1>
+    
+    <div class="study-topbar">
+      <div class="study-stats">
+        <div class="stat-item">
+          <span class="stat-label">New:</span>
+          <span class="stat-value" id="new-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Learning:</span>
+          <span class="stat-value" id="learning-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Due:</span>
+          <span class="stat-value" id="due-count">0</span>
+        </div>
+      </div>
+      <button class="btn-back" onclick="showPage('decks')">← Back to Decks</button>
+    </div>
+
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-face flashcard-front">
+          <div class="flashcard-tag" id="flashcard-tag"></div>
+          <div class="flashcard-emoji" id="flashcard-emoji"></div>
+          <div class="flashcard-word" id="flashcard-word"></div>
+          <div class="flashcard-translit" id="flashcard-translit"></div>
+          <div class="flashcard-sentence" id="flashcard-sentence"></div>
+          <button class="speak-btn" onclick="speakWord(event)">🔊 Pronounce</button>
+          <div class="flashcard-hint">👆 Click to reveal</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="flashcard-tag" id="flashcard-back-tag"></div>
+          <div class="flashcard-emoji" id="flashcard-back-emoji"></div>
+          <div class="flashcard-word" id="flashcard-answer"></div>
+          <div class="flashcard-translit" id="flashcard-answer-translit"></div>
+          <div class="flashcard-sentence" id="flashcard-back-sentence"></div>
+          <button class="speak-btn" onclick="speakWord(event)">🔊 Pronounce</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="show-ans-btn" id="show-ans-btn" onclick="flipCard()">Show Answer</button>
+
+    <div class="rating-buttons" id="rating-buttons" style="display:none;">
+      <button class="rating-btn again" onclick="rateCard(1)">Again</button>
+      <button class="rating-btn hard" onclick="rateCard(2)">Hard</button>
+      <button class="rating-btn good" onclick="rateCard(3)">Good</button>
+      <button class="rating-btn easy" onclick="rateCard(4)">Easy</button>
+    </div>
+
+    <div id="study-done" style="display:none; text-align:center; padding:40px;">
+      <h2 style="font-size:2rem; margin-bottom:16px;">🎉 Deck Complete!</h2>
+      <p style="color:var(--text2); margin-bottom:24px;">Great job! Come back tomorrow for your review.</p>
+      <button class="btn-back" onclick="showPage('decks')">← Back to Decks</button>
+    </div>
+  </div>
+
+  <!-- BROWSE PAGE -->
+  <div class="page" id="page-browse">
+    <h1 class="page-title">📖 All Words</h1>
+    
+    <div class="browse-search">
+      <input type="text" class="search-input" id="search-input" placeholder="Search words..." onkeyup="filterCards()">
+    </div>
+
+    <table class="cards-table">
+      <thead>
+        <tr>
+          <th>Chinese</th>
+          <th>Pinyin</th>
+          <th>English</th>
+          <th>Category</th>
+        </tr>
+      </thead>
+      <tbody id="cards-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- STATS PAGE -->
+  <div class="page" id="page-stats">
+    <h1 class="page-title">📊 Statistics</h1>
+    <div id="stats-display" style="padding:24px; background:var(--surface2); border-radius:12px;">
+      <p style="color:var(--text2);">Learning statistics will appear here as you study.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>🇨🇳 PolyCards Chinese - Scientific Language Learning</p>
+  <p style="margin-top:8px; font-size:0.85rem;">Version 0.20 | <a href="indexhome.html" style="color:var(--blue); text-decoration:none;">Back to Home</a></p>
+</footer>
+
+<!-- JAVASCRIPT -->
+<script>
+  // ════════════════════════════════════════
+  // DATA - 100 CHINESE WORDS (MANDARIN)
+  // ════════════════════════════════════════
+
+  const words = [
+    // ANIMALS (10)
+    { zh: "狗", pinyin: "gǒu", en: "dog", category: "Animals", emoji: "🐕", sentence_zh: "狗很友好", sentence_en: "The dog is friendly" },
+    { zh: "猫", pinyin: "māo", en: "cat", category: "Animals", emoji: "🐱", sentence_zh: "猫睡觉", sentence_en: "The cat sleeps" },
+    { zh: "鸟", pinyin: "niǎo", en: "bird", category: "Animals", emoji: "🐦", sentence_zh: "鸟飞行", sentence_en: "The bird flies" },
+    { zh: "马", pinyin: "mǎ", en: "horse", category: "Animals", emoji: "🐴", sentence_zh: "马跑步", sentence_en: "The horse runs" },
+    { zh: "牛", pinyin: "niú", en: "cow", category: "Animals", emoji: "🐄", sentence_zh: "牛吃草", sentence_en: "The cow eats grass" },
+    { zh: "猪", pinyin: "zhū", en: "pig", category: "Animals", emoji: "🐷", sentence_zh: "猪很胖", sentence_en: "The pig is fat" },
+    { zh: "羊", pinyin: "yáng", en: "sheep", category: "Animals", emoji: "🐑", sentence_zh: "羊有毛", sentence_en: "The sheep has wool" },
+    { zh: "鸡", pinyin: "jī", en: "rooster", category: "Animals", emoji: "🐓", sentence_zh: "鸡唱歌", sentence_en: "The rooster sings" },
+    { zh: "鸭", pinyin: "yā", en: "duck", category: "Animals", emoji: "🦆", sentence_zh: "鸭游泳", sentence_en: "The duck swims" },
+    { zh: "鱼", pinyin: "yú", en: "fish", category: "Animals", emoji: "🐠", sentence_zh: "鱼在水里游", sentence_en: "The fish swims in water" },
+
+    // FOOD & DRINK (10)
+    { zh: "面包", pinyin: "miànbāo", en: "bread", category: "Food", emoji: "🍞", sentence_zh: "我早餐吃面包", sentence_en: "I eat bread for breakfast" },
+    { zh: "水", pinyin: "shuǐ", en: "water", category: "Drink", emoji: "💧", sentence_zh: "我每天喝水", sentence_en: "I drink water every day" },
+    { zh: "苹果", pinyin: "píngguǒ", en: "apple", category: "Food", emoji: "🍎", sentence_zh: "苹果是红色的", sentence_en: "The apple is red" },
+    { zh: "香蕉", pinyin: "xiāngjiāo", en: "banana", category: "Food", emoji: "🍌", sentence_zh: "香蕉是黄色的", sentence_en: "The banana is yellow" },
+    { zh: "橙子", pinyin: "chéngzi", en: "orange", category: "Food", emoji: "🍊", sentence_zh: "橙子很甜", sentence_en: "The orange is sweet" },
+    { zh: "奶酪", pinyin: "nǎilào", en: "cheese", category: "Food", emoji: "🧀", sentence_zh: "奶酪很好吃", sentence_en: "The cheese is delicious" },
+    { zh: "牛奶", pinyin: "niúnǎi", en: "milk", category: "Drink", emoji: "🥛", sentence_zh: "牛奶是白色的", sentence_en: "The milk is white" },
+    { zh: "肉", pinyin: "ròu", en: "meat", category: "Food", emoji: "🥩", sentence_zh: "肉是蛋白质", sentence_en: "Meat is protein" },
+    { zh: "鸡肉", pinyin: "jīròu", en: "chicken", category: "Food", emoji: "🍗", sentence_zh: "鸡肉很好吃", sentence_en: "The chicken is tasty" },
+    { zh: "米", pinyin: "mǐ", en: "rice", category: "Food", emoji: "🍚", sentence_zh: "米是白色的", sentence_en: "The rice is white" },
+
+    // FAMILY (10)
+    { zh: "父亲", pinyin: "fùqin", en: "father", category: "Family", emoji: "👨", sentence_zh: "我父亲工作", sentence_en: "My father works" },
+    { zh: "母亲", pinyin: "mǔqin", en: "mother", category: "Family", emoji: "👩", sentence_zh: "我母亲做饭", sentence_en: "My mother cooks" },
+    { zh: "哥哥", pinyin: "gēge", en: "brother", category: "Family", emoji: "👦", sentence_zh: "我哥哥玩耍", sentence_en: "My brother plays" },
+    { zh: "妹妹", pinyin: "mèimei", en: "sister", category: "Family", emoji: "👧", sentence_zh: "我妹妹学习", sentence_en: "My sister studies" },
+    { zh: "爷爷", pinyin: "yéye", en: "grandfather", category: "Family", emoji: "👴", sentence_zh: "我爷爷很老", sentence_en: "My grandfather is old" },
+    { zh: "奶奶", pinyin: "nǎinai", en: "grandmother", category: "Family", emoji: "👵", sentence_zh: "我奶奶很善良", sentence_en: "My grandmother is kind" },
+    { zh: "儿子", pinyin: "érzi", en: "son", category: "Family", emoji: "👦", sentence_zh: "我儿子很小", sentence_en: "My son is small" },
+    { zh: "女儿", pinyin: "nǚ'ér", en: "daughter", category: "Family", emoji: "👧", sentence_zh: "我女儿很聪明", sentence_en: "My daughter is smart" },
+    { zh: "叔叔", pinyin: "shūshu", en: "uncle", category: "Family", emoji: "👨", sentence_zh: "我叔叔是工程师", sentence_en: "My uncle is an engineer" },
+    { zh: "阿姨", pinyin: "āyí", en: "aunt", category: "Family", emoji: "👩", sentence_zh: "我阿姨是医生", sentence_en: "My aunt is a doctor" },
+
+    // BODY PARTS (10)
+    { zh: "头", pinyin: "tóu", en: "head", category: "Body", emoji: "🧠", sentence_zh: "我头疼", sentence_en: "My head hurts" },
+    { zh: "眼睛", pinyin: "yǎnjing", en: "eye", category: "Body", emoji: "👁️", sentence_zh: "我有两只眼睛", sentence_en: "I have two eyes" },
+    { zh: "鼻子", pinyin: "bízi", en: "nose", category: "Body", emoji: "👃", sentence_zh: "我的鼻子很小", sentence_en: "My nose is small" },
+    { zh: "耳朵", pinyin: "ěrduǒ", en: "ear", category: "Body", emoji: "👂", sentence_zh: "我用耳朵听", sentence_en: "I listen with my ears" },
+    { zh: "嘴", pinyin: "zuǐ", en: "mouth", category: "Body", emoji: "👄", sentence_zh: "我用嘴说话", sentence_en: "I speak with my mouth" },
+    { zh: "手臂", pinyin: "shǒǎ", en: "arm", category: "Body", emoji: "💪", sentence_zh: "我有两只手臂", sentence_en: "I have two arms" },
+    { zh: "手", pinyin: "shǒu", en: "hand", category: "Body", emoji: "✋", sentence_zh: "我用手写字", sentence_en: "I write with my hand" },
+    { zh: "腿", pinyin: "tuǐ", en: "leg", category: "Body", emoji: "🦵", sentence_zh: "我有两条腿", sentence_en: "I have two legs" },
+    { zh: "脚", pinyin: "jiǎo", en: "foot", category: "Body", emoji: "🦶", sentence_zh: "我用脚走路", sentence_en: "I walk with my feet" },
+    { zh: "心", pinyin: "xīn", en: "heart", category: "Body", emoji: "❤️", sentence_zh: "心跳动", sentence_en: "The heart beats" },
+
+    // HOUSE & FURNITURE (10)
+    { zh: "房子", pinyin: "fángzi", en: "house", category: "House", emoji: "🏠", sentence_zh: "我的房子很大", sentence_en: "My house is big" },
+    { zh: "门", pinyin: "mén", en: "door", category: "House", emoji: "🚪", sentence_zh: "门是关闭的", sentence_en: "The door is closed" },
+    { zh: "窗户", pinyin: "chuānghu", en: "window", category: "House", emoji: "🪟", sentence_zh: "窗户是打开的", sentence_en: "The window is open" },
+    { zh: "床", pinyin: "chuáng", en: "bed", category: "Furniture", emoji: "🛏️", sentence_zh: "我在床上睡觉", sentence_en: "I sleep in the bed" },
+    { zh: "桌子", pinyin: "zhuōzi", en: "table", category: "Furniture", emoji: "🪑", sentence_zh: "我在桌子上吃饭", sentence_en: "I eat at the table" },
+    { zh: "椅子", pinyin: "yǐzi", en: "chair", category: "Furniture", emoji: "🪑", sentence_zh: "我坐在椅子上", sentence_en: "I sit on the chair" },
+    { zh: "沙发", pinyin: "shāfā", en: "sofa", category: "Furniture", emoji: "🛋️", sentence_zh: "我在沙发上看电视", sentence_en: "I watch TV on the sofa" },
+    { zh: "厨房", pinyin: "chúfáng", en: "kitchen", category: "House", emoji: "🍳", sentence_zh: "我在厨房做饭", sentence_en: "I cook in the kitchen" },
+    { zh: "浴室", pinyin: "yùshì", en: "bathroom", category: "House", emoji: "🚿", sentence_zh: "我在浴室洗澡", sentence_en: "I shower in the bathroom" },
+    { zh: "卧室", pinyin: "wòshì", en: "bedroom", category: "House", emoji: "🛌", sentence_zh: "我在卧室睡觉", sentence_en: "I sleep in the bedroom" },
+
+    // CLOTHING (10)
+    { zh: "衬衫", pinyin: "chènshān", en: "shirt", category: "Clothing", emoji: "👔", sentence_zh: "我穿蓝色衬衫", sentence_en: "I wear a blue shirt" },
+    { zh: "裤子", pinyin: "kùzi", en: "pants", category: "Clothing", emoji: "👖", sentence_zh: "我的裤子是黑色的", sentence_en: "My pants are black" },
+    { zh: "裙子", pinyin: "qúnzi", en: "skirt", category: "Clothing", emoji: "👗", sentence_zh: "她穿裙子", sentence_en: "She wears a skirt" },
+    { zh: "鞋", pinyin: "xié", en: "shoe", category: "Clothing", emoji: "👞", sentence_zh: "我的鞋很舒服", sentence_en: "My shoes are comfortable" },
+    { zh: "帽子", pinyin: "màozi", en: "hat", category: "Clothing", emoji: "🎩", sentence_zh: "我戴帽子", sentence_en: "I wear a hat" },
+    { zh: "袜子", pinyin: "wàzi", en: "sock", category: "Clothing", emoji: "🧦", sentence_zh: "我的袜子是白色的", sentence_en: "My socks are white" },
+    { zh: "外套", pinyin: "wàitào", en: "coat", category: "Clothing", emoji: "🧥", sentence_zh: "我的外套很温暖", sentence_en: "My coat is warm" },
+    { zh: "连衣裙", pinyin: "liányīqún", en: "dress", category: "Clothing", emoji: "👗", sentence_zh: "她的连衣裙很漂亮", sentence_en: "Her dress is beautiful" },
+    { zh: "领带", pinyin: "lǐngdài", en: "tie", category: "Clothing", emoji: "👔", sentence_zh: "我穿红色领带", sentence_en: "I wear a red tie" },
+    { zh: "腰带", pinyin: "yāodài", en: "belt", category: "Clothing", emoji: "⌚", sentence_zh: "我的腰带是皮革的", sentence_en: "My belt is leather" },
+
+    // NUMBERS (10)
+    { zh: "一", pinyin: "yī", en: "one", category: "Numbers", emoji: "1️⃣", sentence_zh: "我有一个", sentence_en: "I have one" },
+    { zh: "二", pinyin: "èr", en: "two", category: "Numbers", emoji: "2️⃣", sentence_zh: "我有两个", sentence_en: "I have two" },
+    { zh: "三", pinyin: "sān", en: "three", category: "Numbers", emoji: "3️⃣", sentence_zh: "我有三个", sentence_en: "I have three" },
+    { zh: "四", pinyin: "sì", en: "four", category: "Numbers", emoji: "4️⃣", sentence_zh: "我有四个", sentence_en: "I have four" },
+    { zh: "五", pinyin: "wǔ", en: "five", category: "Numbers", emoji: "5️⃣", sentence_zh: "我有五个", sentence_en: "I have five" },
+    { zh: "六", pinyin: "liù", en: "six", category: "Numbers", emoji: "6️⃣", sentence_zh: "我有六个", sentence_en: "I have six" },
+    { zh: "七", pinyin: "qī", en: "seven", category: "Numbers", emoji: "7️⃣", sentence_zh: "我有七个", sentence_en: "I have seven" },
+    { zh: "八", pinyin: "bā", en: "eight", category: "Numbers", emoji: "8️⃣", sentence_zh: "我有八个", sentence_en: "I have eight" },
+    { zh: "九", pinyin: "jiǔ", en: "nine", category: "Numbers", emoji: "9️⃣", sentence_zh: "我有九个", sentence_en: "I have nine" },
+    { zh: "十", pinyin: "shí", en: "ten", category: "Numbers", emoji: "🔟", sentence_zh: "我有十个", sentence_en: "I have ten" },
+
+    // VERBS (10)
+    { zh: "是", pinyin: "shì", en: "to be", category: "Verbs", emoji: "🌟", sentence_zh: "我是", sentence_en: "I am" },
+    { zh: "有", pinyin: "yǒu", en: "to have", category: "Verbs", emoji: "✋", sentence_zh: "我有一本书", sentence_en: "I have a book" },
+    { zh: "做", pinyin: "zuò", en: "to do", category: "Verbs", emoji: "✅", sentence_zh: "我做功课", sentence_en: "I do homework" },
+    { zh: "去", pinyin: "qù", en: "to go", category: "Verbs", emoji: "🚶", sentence_zh: "我去电影院", sentence_en: "I go to the cinema" },
+    { zh: "来", pinyin: "lái", en: "to come", category: "Verbs", emoji: "👋", sentence_zh: "我明天来", sentence_en: "I come tomorrow" },
+    { zh: "说", pinyin: "shuō", en: "to speak", category: "Verbs", emoji: "💬", sentence_zh: "我说中文", sentence_en: "I speak Chinese" },
+    { zh: "吃", pinyin: "chī", en: "to eat", category: "Verbs", emoji: "🍽️", sentence_zh: "我吃面包", sentence_en: "I eat bread" },
+    { zh: "喝", pinyin: "hē", en: "to drink", category: "Verbs", emoji: "🥤", sentence_zh: "我喝水", sentence_en: "I drink water" },
+    { zh: "睡", pinyin: "shuì", en: "to sleep", category: "Verbs", emoji: "😴", sentence_zh: "我睡8小时", sentence_en: "I sleep 8 hours" },
+    { zh: "看", pinyin: "kàn", en: "to see", category: "Verbs", emoji: "👀", sentence_zh: "我看房子", sentence_en: "I see a house" },
+
+    // ADJECTIVES (10)
+    { zh: "大", pinyin: "dà", en: "big", category: "Adjectives", emoji: "📏", sentence_zh: "房子很大", sentence_en: "The house is big" },
+    { zh: "小", pinyin: "xiǎo", en: "small", category: "Adjectives", emoji: "🤏", sentence_zh: "猫很小", sentence_en: "The cat is small" },
+    { zh: "好", pinyin: "hǎo", en: "good", category: "Adjectives", emoji: "👍", sentence_zh: "这是好天气", sentence_en: "It's a good day" },
+    { zh: "坏", pinyin: "huài", en: "bad", category: "Adjectives", emoji: "👎", sentence_zh: "这是坏天气", sentence_en: "It's a bad day" },
+    { zh: "漂亮", pinyin: "piàoliang", en: "beautiful", category: "Adjectives", emoji: "✨", sentence_zh: "花很漂亮", sentence_en: "The flower is beautiful" },
+    { zh: "丑", pinyin: "chǒu", en: "ugly", category: "Adjectives", emoji: "😖", sentence_zh: "这不是丑的", sentence_en: "It's not ugly" },
+    { zh: "快", pinyin: "kuài", en: "fast", category: "Adjectives", emoji: "⚡", sentence_zh: "汽车很快", sentence_en: "The car is fast" },
+    { zh: "慢", pinyin: "màn", en: "slow", category: "Adjectives", emoji: "🐢", sentence_zh: "乌龟很慢", sentence_en: "The turtle is slow" },
+    { zh: "热", pinyin: "rè", en: "hot", category: "Adjectives", emoji: "🔥", sentence_zh: "咖啡很热", sentence_en: "The coffee is hot" },
+    { zh: "冷", pinyin: "lěng", en: "cold", category: "Adjectives", emoji: "❄️", sentence_zh: "冰很冷", sentence_en: "The ice is cold" },
+
+    // COMMON PHRASES (10)
+    { zh: "你好", pinyin: "nǐ hǎo", en: "hello", category: "Phrases", emoji: "👋", sentence_zh: "你好，你好吗？", sentence_en: "Hello, how are you?" },
+    { zh: "再见", pinyin: "zàijiàn", en: "goodbye", category: "Phrases", emoji: "👋", sentence_zh: "再见，待会见", sentence_en: "Goodbye, see you later" },
+    { zh: "请", pinyin: "qǐng", en: "please", category: "Phrases", emoji: "🙏", sentence_zh: "请帮我", sentence_en: "Please, help me" },
+    { zh: "谢谢", pinyin: "xièxie", en: "thank you", category: "Phrases", emoji: "🙏", sentence_zh: "谢谢你的帮助", sentence_en: "Thank you for your help" },
+    { zh: "不客气", pinyin: "búkèqi", en: "you're welcome", category: "Phrases", emoji: "😊", sentence_zh: "不客气，这是我的荣幸", sentence_en: "You're welcome, it's my pleasure" },
+    { zh: "是", pinyin: "shì", en: "yes", category: "Phrases", emoji: "✅", sentence_zh: "是的，我同意", sentence_en: "Yes, I agree" },
+    { zh: "不", pinyin: "bù", en: "no", category: "Phrases", emoji: "❌", sentence_zh: "不，我不想", sentence_en: "No, I don't want to" },
+    { zh: "朋友", pinyin: "péngyou", en: "friend", category: "Phrases", emoji: "👫", sentence_zh: "他是我的朋友", sentence_en: "He is my friend" },
+    { zh: "爱", pinyin: "ài", en: "love", category: "Phrases", emoji: "❤️", sentence_zh: "我爱你", sentence_en: "I love you" },
+    { zh: "天", pinyin: "tiān", en: "day", category: "Phrases", emoji: "☀️", sentence_zh: "这是好天气", sentence_en: "It's a good day" }
+  ];
+
+  // ════════════════════════════════════════
+  // STATE
+  // ════════════════════════════════════════
+
+  let currentDeck = null;
+  let currentCardIndex = 0;
+  let isFlipped = false;
+  let deckStats = {};
+
+  // ════════════════════════════════════════
+  // FUNCTIONS
+  // ════════════════════════════════════════
+
+  function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'browse') renderBrowse();
+  }
+
+  function initDecks() {
+    const categories = [...new Set(words.map(w => w.category))];
+    const deckList = document.getElementById('deck-list');
+    deckList.innerHTML = '';
+
+    categories.forEach((cat, idx) => {
+      const catWords = words.filter(w => w.category === cat);
+      const card = document.createElement('div');
+      card.className = 'deck-card';
+      card.innerHTML = `
+        <div class="deck-emoji">${catWords[0].emoji}</div>
+        <div class="deck-name">${cat}</div>
+        <div class="deck-stats">${catWords.length} words</div>
+      `;
+      card.onclick = () => startStudy(cat);
+      deckList.appendChild(card);
+    });
+  }
+
+  function startStudy(category) {
+    currentDeck = category;
+    currentCardIndex = 0;
+    isFlipped = false;
+    showPage('study');
+    renderCard();
+    updateStats();
+  }
+
+  function renderCard() {
+    const deckWords = words.filter(w => w.category === currentDeck);
+    if (currentCardIndex >= deckWords.length) {
+      document.getElementById('study-done').style.display = 'block';
+      document.getElementById('show-ans-btn').style.display = 'none';
+      document.getElementById('rating-buttons').style.display = 'none';
+      return;
+    }
+
+    const card = deckWords[currentCardIndex];
+    document.getElementById('flashcard-tag').textContent = `🇨🇳 ${currentDeck}`;
+    document.getElementById('flashcard-emoji').textContent = card.emoji;
+    document.getElementById('flashcard-word').textContent = card.zh;
+    document.getElementById('flashcard-translit').textContent = `(${card.pinyin})`;
+    document.getElementById('flashcard-sentence').textContent = card.sentence_zh;
+
+    document.getElementById('flashcard-back-tag').textContent = `🇬🇧 Translation`;
+    document.getElementById('flashcard-back-emoji').textContent = card.emoji;
+    document.getElementById('flashcard-answer').textContent = card.en;
+    document.getElementById('flashcard-answer-translit').textContent = ``;
+    document.getElementById('flashcard-back-sentence').textContent = card.sentence_en;
+
+    document.getElementById('flashcard').classList.remove('flipped');
+    document.getElementById('show-ans-btn').style.display = 'block';
+    document.getElementById('rating-buttons').style.display = 'none';
+    isFlipped = false;
+  }
+
+  function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('flashcard').classList.toggle('flipped');
+    if (isFlipped) {
+      document.getElementById('show-ans-btn').style.display = 'none';
+      document.getElementById('rating-buttons').style.display = 'grid';
+    }
+  }
+
+  function rateCard(rating) {
+    currentCardIndex++;
+    renderCard();
+    updateStats();
+  }
+
+  function speakWord(e) {
+    e.stopPropagation();
+    const deckWords = words.filter(w => w.category === currentDeck);
+    const card = deckWords[currentCardIndex];
+    const text = isFlipped ? card.en : card.zh;
+    const lang = isFlipped ? 'en-US' : 'zh-CN';
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    speechSynthesis.speak(utterance);
+  }
+
+  function updateStats() {
+    const deckWords = words.filter(w => w.category === currentDeck);
+    const total = deckWords.length;
+    const done = currentCardIndex;
+    const remaining = total - done;
+
+    document.getElementById('new-count').textContent = remaining;
+    document.getElementById('learning-count').textContent = '0';
+    document.getElementById('due-count').textContent = done;
+  }
+
+  function renderBrowse() {
+    const tbody = document.getElementById('cards-tbody');
+    tbody.innerHTML = '';
+    words.forEach(word => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${word.zh}</strong></td>
+        <td>${word.pinyin}</td>
+        <td>${word.en}</td>
+        <td>${word.category}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function filterCards() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const rows = document.querySelectorAll('.cards-table tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(search) ? '' : 'none';
+    });
+  }
+
+  // ════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initDecks();
+  });
+</script>
+
+</body>
+</html>

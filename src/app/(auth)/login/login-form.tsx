@@ -22,12 +22,21 @@ function getCallbackErrorMessage(
   return null;
 }
 
-export function LoginForm({ urlErrorKey }: { urlErrorKey?: string | null }) {
+export function LoginForm({
+  urlErrorKey,
+  nextPath,
+}: {
+  urlErrorKey?: string | null;
+  nextPath?: string | null;
+}) {
   const [state, formAction] = useActionState(loginAction, initialState);
   const callbackError = getCallbackErrorMessage(urlErrorKey);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {nextPath != null ? (
+        <input type="hidden" name="next" value={nextPath} />
+      ) : null}
       <div className="flex flex-col gap-1">
         <label htmlFor="email" className="text-sm font-medium text-zinc-700">
           Email

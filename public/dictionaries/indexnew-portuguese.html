@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🇵🇹 PolyCards Portuguese</title>
+  <style>
+    :root {
+      --primary: #006600;
+      --primary-light: #FFD700;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --text: #ffffff;
+      --text2: #b0b0b0;
+      --border: #2d2d44;
+      --blue: #4a9eff;
+      --green: #4caf50;
+      --orange: #ff9800;
+      --red: #f44336;
+      --radius: 8px;
+      --spacing: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--blue), #FFD700);
+      border-radius: 10px;
+      border: 2px solid var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #3a8eef, #ffc700);
+      box-shadow: 0 0 12px rgba(74, 158, 255, 0.5);
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .logo-name {
+      color: var(--text);
+    }
+
+    .logo-country {
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    .nav-version {
+      color: var(--text2);
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-back {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-back:hover {
+      background: #3a8eef;
+      transform: translateY(-2px);
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* PAGES */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    /* DECKS PAGE */
+    .deck-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .deck-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .deck-card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 8px 24px rgba(74, 158, 255, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .deck-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .deck-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .deck-stats {
+      font-size: 0.85rem;
+      color: var(--text2);
+    }
+
+    /* STUDY PAGE */
+    .study-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+    }
+
+    .study-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 0.9rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-label {
+      color: var(--text2);
+    }
+
+    .stat-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* FLASHCARD */
+    .flashcard-wrap {
+      perspective: 1200px;
+      margin-bottom: 24px;
+    }
+
+    .flashcard {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      border: 2px solid var(--border);
+    }
+
+    .flashcard-front {
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.1), rgba(255, 215, 0, 0.05));
+      color: var(--text);
+    }
+
+    .flashcard-back {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(74, 158, 255, 0.05));
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-tag {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .flashcard-emoji {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .flashcard-word {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--blue);
+    }
+
+    .flashcard-translit {
+      font-size: 1rem;
+      color: var(--text2);
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .flashcard-sentence {
+      font-size: 0.95rem;
+      color: var(--text2);
+      margin: 16px 0;
+      line-height: 1.5;
+    }
+
+    .flashcard-hint {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-top: 16px;
+      font-style: italic;
+    }
+
+    .speak-btn {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+
+    .speak-btn:hover {
+      background: #3a8eef;
+    }
+
+    .show-ans-btn {
+      width: 100%;
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s;
+      margin-bottom: 16px;
+    }
+
+    .show-ans-btn:hover {
+      background: #45a049;
+    }
+
+    /* RATING BUTTONS */
+    .rating-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .rating-btn {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .rating-btn:hover {
+      border-color: var(--blue);
+      background: var(--surface);
+    }
+
+    .rating-btn.again { background: rgba(244, 67, 54, 0.2); border-color: #f44336; }
+    .rating-btn.hard { background: rgba(255, 152, 0, 0.2); border-color: #ff9800; }
+    .rating-btn.good { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; }
+    .rating-btn.easy { background: rgba(29, 78, 216, 0.2); border-color: #1d4ed8; }
+
+    /* BROWSE PAGE */
+    .browse-search {
+      margin-bottom: 24px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .cards-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cards-table th {
+      background: var(--surface2);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .cards-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cards-table tr:hover {
+      background: var(--surface2);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      main {
+        padding: 24px 16px;
+      }
+
+      .page-title {
+        font-size: 1.4rem;
+      }
+
+      .flashcard {
+        height: 250px;
+      }
+
+      .flashcard-word {
+        font-size: 2rem;
+      }
+
+      .rating-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .deck-list {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <svg width="18" height="13" viewBox="0 0 3 2" style="display:inline-block;vertical-align:middle;margin-right:6px;">
+      <rect fill="#006600" width="1" height="2"/>
+      <rect fill="#FFD700" x="1" width="1" height="2"/>
+      <rect fill="#FF0000" x="2" width="1" height="2"/>
+    </svg>
+    <span class="logo-name">PolyCards</span>
+    <span class="logo-country">Portuguese</span>
+    <span class="nav-version">v0.20</span>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn-back" onclick="window.location.href='indexhome.html'">← Back to Languages</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- DECKS PAGE -->
+  <div class="page active" id="page-decks">
+    <h1 class="page-title">📚 My Decks</h1>
+    <div class="deck-list" id="deck-list"></div>
+  </div>
+
+  <!-- STUDY PAGE -->
+  <div class="page" id="page-study">
+    <h1 class="page-title">Study</h1>
+    
+    <div class="study-topbar">
+      <div class="study-stats">
+        <div class="stat-item">
+          <span class="stat-label">New:</span>
+          <span class="stat-value" id="new-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Learning:</span>
+          <span class="stat-value" id="learning-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Due:</span>
+          <span class="stat-value" id="due-count">0</span>
+        </div>
+      </div>
+      <button class="btn-back" onclick="showPage('decks')">← Back to Decks</button>
+    </div>
+
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-face flashcard-front">
+          <div class="flashcard-tag" id="flashcard-tag"></div>
+          <div class="flashcard-emoji" id="flashcard-emoji"></div>
+          <div class="flashcard-word" id="flashcard-word"></div>
+          <div class="flashcard-translit" id="flashcard-translit"></div>
+          <div class="flashcard-sentence" id="flashcard-sentence"></div>
+          <button class="speak-btn" onclick="speakWord(event)">🔊 Pronounce</button>
+          <div class="flashcard-hint">👆 Click to reveal</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="flashcard-tag" id="flashcard-back-tag"></div>
+          <div class="flashcard-emoji" id="flashcard-back-emoji"></div>
+          <div class="flashcard-word" id="flashcard-answer"></div>
+          <div class="flashcard-translit" id="flashcard-answer-translit"></div>
+          <div class="flashcard-sentence" id="flashcard-back-sentence"></div>
+          <button class="speak-btn" onclick="speakWord(event)">🔊 Pronounce</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="show-ans-btn" id="show-ans-btn" onclick="flipCard()">Show Answer</button>
+
+    <div class="rating-buttons" id="rating-buttons" style="display:none;">
+      <button class="rating-btn again" onclick="rateCard(1)">Again</button>
+      <button class="rating-btn hard" onclick="rateCard(2)">Hard</button>
+      <button class="rating-btn good" onclick="rateCard(3)">Good</button>
+      <button class="rating-btn easy" onclick="rateCard(4)">Easy</button>
+    </div>
+
+    <div id="study-done" style="display:none; text-align:center; padding:40px;">
+      <h2 style="font-size:2rem; margin-bottom:16px;">🎉 Deck Complete!</h2>
+      <p style="color:var(--text2); margin-bottom:24px;">Great job! Come back tomorrow for your review.</p>
+      <button class="btn-back" onclick="showPage('decks')">← Back to Decks</button>
+    </div>
+  </div>
+
+  <!-- BROWSE PAGE -->
+  <div class="page" id="page-browse">
+    <h1 class="page-title">📖 All Words</h1>
+    
+    <div class="browse-search">
+      <input type="text" class="search-input" id="search-input" placeholder="Search words..." onkeyup="filterCards()">
+    </div>
+
+    <table class="cards-table">
+      <thead>
+        <tr>
+          <th>Portuguese</th>
+          <th>English</th>
+          <th>Category</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="cards-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- STATS PAGE -->
+  <div class="page" id="page-stats">
+    <h1 class="page-title">📊 Statistics</h1>
+    <div id="stats-display" style="padding:24px; background:var(--surface2); border-radius:12px;">
+      <p style="color:var(--text2);">Learning statistics will appear here as you study.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>🇵🇹 PolyCards Portuguese - Scientific Language Learning</p>
+  <p style="margin-top:8px; font-size:0.85rem;">Version 0.20 | <a href="indexhome.html" style="color:var(--blue); text-decoration:none;">Back to Home</a></p>
+</footer>
+
+<!-- JAVASCRIPT -->
+<script>
+  // ════════════════════════════════════════
+  // DATA - 100 PORTUGUESE WORDS
+  // ════════════════════════════════════════
+
+  const words = [
+    // ANIMALS (10)
+    { pt: "cão", en: "dog", category: "Animals", emoji: "🐕", sentence_pt: "O cão é amigável", sentence_en: "The dog is friendly" },
+    { pt: "gato", en: "cat", category: "Animals", emoji: "🐱", sentence_pt: "O gato dorme", sentence_en: "The cat sleeps" },
+    { pt: "pássaro", en: "bird", category: "Animals", emoji: "🐦", sentence_pt: "O pássaro voa", sentence_en: "The bird flies" },
+    { pt: "cavalo", en: "horse", category: "Animals", emoji: "🐴", sentence_pt: "O cavalo corre", sentence_en: "The horse runs" },
+    { pt: "vaca", en: "cow", category: "Animals", emoji: "🐄", sentence_pt: "A vaca come grama", sentence_en: "The cow eats grass" },
+    { pt: "porco", en: "pig", category: "Animals", emoji: "🐷", sentence_pt: "O porco é gordo", sentence_en: "The pig is fat" },
+    { pt: "ovelha", en: "sheep", category: "Animals", emoji: "🐑", sentence_pt: "A ovelha tem lã", sentence_en: "The sheep has wool" },
+    { pt: "galo", en: "rooster", category: "Animals", emoji: "🐓", sentence_pt: "O galo canta", sentence_en: "The rooster sings" },
+    { pt: "pato", en: "duck", category: "Animals", emoji: "🦆", sentence_pt: "O pato nada", sentence_en: "The duck swims" },
+    { pt: "peixe", en: "fish", category: "Animals", emoji: "🐠", sentence_pt: "O peixe nada na água", sentence_en: "The fish swims in water" },
+
+    // FOOD & DRINK (10)
+    { pt: "pão", en: "bread", category: "Food", emoji: "🍞", sentence_pt: "Como pão no café da manhã", sentence_en: "I eat bread for breakfast" },
+    { pt: "água", en: "water", category: "Drink", emoji: "💧", sentence_pt: "Bebo água todos os dias", sentence_en: "I drink water every day" },
+    { pt: "maçã", en: "apple", category: "Food", emoji: "🍎", sentence_pt: "A maçã é vermelha", sentence_en: "The apple is red" },
+    { pt: "banana", en: "banana", category: "Food", emoji: "🍌", sentence_pt: "A banana é amarela", sentence_en: "The banana is yellow" },
+    { pt: "laranja", en: "orange", category: "Food", emoji: "🍊", sentence_pt: "A laranja é doce", sentence_en: "The orange is sweet" },
+    { pt: "queijo", en: "cheese", category: "Food", emoji: "🧀", sentence_pt: "O queijo é delicioso", sentence_en: "The cheese is delicious" },
+    { pt: "leite", en: "milk", category: "Drink", emoji: "🥛", sentence_pt: "O leite é branco", sentence_en: "The milk is white" },
+    { pt: "carne", en: "meat", category: "Food", emoji: "🥩", sentence_pt: "A carne é proteína", sentence_en: "Meat is protein" },
+    { pt: "frango", en: "chicken", category: "Food", emoji: "🍗", sentence_pt: "O frango é saboroso", sentence_en: "The chicken is tasty" },
+    { pt: "arroz", en: "rice", category: "Food", emoji: "🍚", sentence_pt: "O arroz é branco", sentence_en: "The rice is white" },
+
+    // FAMILY (10)
+    { pt: "pai", en: "father", category: "Family", emoji: "👨", sentence_pt: "Meu pai trabalha", sentence_en: "My father works" },
+    { pt: "mãe", en: "mother", category: "Family", emoji: "👩", sentence_pt: "Minha mãe cozinha", sentence_en: "My mother cooks" },
+    { pt: "irmão", en: "brother", category: "Family", emoji: "👦", sentence_pt: "Meu irmão brinca", sentence_en: "My brother plays" },
+    { pt: "irmã", en: "sister", category: "Family", emoji: "👧", sentence_pt: "Minha irmã estuda", sentence_en: "My sister studies" },
+    { pt: "avô", en: "grandfather", category: "Family", emoji: "👴", sentence_pt: "Meu avô é velho", sentence_en: "My grandfather is old" },
+    { pt: "avó", en: "grandmother", category: "Family", emoji: "👵", sentence_pt: "Minha avó é gentil", sentence_en: "My grandmother is kind" },
+    { pt: "filho", en: "son", category: "Family", emoji: "👦", sentence_pt: "Meu filho é pequeno", sentence_en: "My son is small" },
+    { pt: "filha", en: "daughter", category: "Family", emoji: "👧", sentence_pt: "Minha filha é inteligente", sentence_en: "My daughter is smart" },
+    { pt: "tio", en: "uncle", category: "Family", emoji: "👨", sentence_pt: "Meu tio é engenheiro", sentence_en: "My uncle is an engineer" },
+    { pt: "tia", en: "aunt", category: "Family", emoji: "👩", sentence_pt: "Minha tia é médica", sentence_en: "My aunt is a doctor" },
+
+    // BODY PARTS (10)
+    { pt: "cabeça", en: "head", category: "Body", emoji: "🧠", sentence_pt: "Minha cabeça dói", sentence_en: "My head hurts" },
+    { pt: "olho", en: "eye", category: "Body", emoji: "👁️", sentence_pt: "Tenho dois olhos", sentence_en: "I have two eyes" },
+    { pt: "nariz", en: "nose", category: "Body", emoji: "👃", sentence_pt: "Meu nariz é pequeno", sentence_en: "My nose is small" },
+    { pt: "ouvido", en: "ear", category: "Body", emoji: "👂", sentence_pt: "Ouço com meus ouvidos", sentence_en: "I listen with my ears" },
+    { pt: "boca", en: "mouth", category: "Body", emoji: "👄", sentence_pt: "Falo com a boca", sentence_en: "I speak with my mouth" },
+    { pt: "braço", en: "arm", category: "Body", emoji: "💪", sentence_pt: "Tenho dois braços", sentence_en: "I have two arms" },
+    { pt: "mão", en: "hand", category: "Body", emoji: "✋", sentence_pt: "Escrevo com a mão", sentence_en: "I write with my hand" },
+    { pt: "perna", en: "leg", category: "Body", emoji: "🦵", sentence_pt: "Tenho duas pernas", sentence_en: "I have two legs" },
+    { pt: "pé", en: "foot", category: "Body", emoji: "🦶", sentence_pt: "Caminho com os pés", sentence_en: "I walk with my feet" },
+    { pt: "coração", en: "heart", category: "Body", emoji: "❤️", sentence_pt: "O coração bate", sentence_en: "The heart beats" },
+
+    // HOUSE & FURNITURE (10)
+    { pt: "casa", en: "house", category: "House", emoji: "🏠", sentence_pt: "Minha casa é grande", sentence_en: "My house is big" },
+    { pt: "porta", en: "door", category: "House", emoji: "🚪", sentence_pt: "A porta está fechada", sentence_en: "The door is closed" },
+    { pt: "janela", en: "window", category: "House", emoji: "🪟", sentence_pt: "A janela está aberta", sentence_en: "The window is open" },
+    { pt: "cama", en: "bed", category: "Furniture", emoji: "🛏️", sentence_pt: "Durmo na cama", sentence_en: "I sleep in the bed" },
+    { pt: "mesa", en: "table", category: "Furniture", emoji: "🪑", sentence_pt: "Como na mesa", sentence_en: "I eat at the table" },
+    { pt: "cadeira", en: "chair", category: "Furniture", emoji: "🪑", sentence_pt: "Sento na cadeira", sentence_en: "I sit on the chair" },
+    { pt: "sofá", en: "sofa", category: "Furniture", emoji: "🛋️", sentence_pt: "Assisto TV no sofá", sentence_en: "I watch TV on the sofa" },
+    { pt: "cozinha", en: "kitchen", category: "House", emoji: "🍳", sentence_pt: "Cozinho na cozinha", sentence_en: "I cook in the kitchen" },
+    { pt: "banheiro", en: "bathroom", category: "House", emoji: "🚿", sentence_pt: "Tomo banho no banheiro", sentence_en: "I shower in the bathroom" },
+    { pt: "quarto", en: "bedroom", category: "House", emoji: "🛌", sentence_pt: "Durmo no quarto", sentence_en: "I sleep in the bedroom" },
+
+    // CLOTHING (10)
+    { pt: "camisa", en: "shirt", category: "Clothing", emoji: "👔", sentence_pt: "Visto uma camisa azul", sentence_en: "I wear a blue shirt" },
+    { pt: "calça", en: "pants", category: "Clothing", emoji: "👖", sentence_pt: "Minhas calças são pretas", sentence_en: "My pants are black" },
+    { pt: "saia", en: "skirt", category: "Clothing", emoji: "👗", sentence_pt: "Ela veste uma saia", sentence_en: "She wears a skirt" },
+    { pt: "sapato", en: "shoe", category: "Clothing", emoji: "👞", sentence_pt: "Meus sapatos são confortáveis", sentence_en: "My shoes are comfortable" },
+    { pt: "chapéu", en: "hat", category: "Clothing", emoji: "🎩", sentence_pt: "Visto um chapéu", sentence_en: "I wear a hat" },
+    { pt: "meia", en: "sock", category: "Clothing", emoji: "🧦", sentence_pt: "Minhas meias são brancas", sentence_en: "My socks are white" },
+    { pt: "casaco", en: "coat", category: "Clothing", emoji: "🧥", sentence_pt: "Meu casaco é quente", sentence_en: "My coat is warm" },
+    { pt: "vestido", en: "dress", category: "Clothing", emoji: "👗", sentence_pt: "Seu vestido é bonito", sentence_en: "Her dress is beautiful" },
+    { pt: "gravata", en: "tie", category: "Clothing", emoji: "👔", sentence_pt: "Visto uma gravata vermelha", sentence_en: "I wear a red tie" },
+    { pt: "cinto", en: "belt", category: "Clothing", emoji: "⌚", sentence_pt: "Meu cinto é de couro", sentence_en: "My belt is leather" },
+
+    // NUMBERS (10)
+    { pt: "um", en: "one", category: "Numbers", emoji: "1️⃣", sentence_pt: "Tenho um", sentence_en: "I have one" },
+    { pt: "dois", en: "two", category: "Numbers", emoji: "2️⃣", sentence_pt: "Tenho dois", sentence_en: "I have two" },
+    { pt: "três", en: "three", category: "Numbers", emoji: "3️⃣", sentence_pt: "Tenho três", sentence_en: "I have three" },
+    { pt: "quatro", en: "four", category: "Numbers", emoji: "4️⃣", sentence_pt: "Tenho quatro", sentence_en: "I have four" },
+    { pt: "cinco", en: "five", category: "Numbers", emoji: "5️⃣", sentence_pt: "Tenho cinco", sentence_en: "I have five" },
+    { pt: "seis", en: "six", category: "Numbers", emoji: "6️⃣", sentence_pt: "Tenho seis", sentence_en: "I have six" },
+    { pt: "sete", en: "seven", category: "Numbers", emoji: "7️⃣", sentence_pt: "Tenho sete", sentence_en: "I have seven" },
+    { pt: "oito", en: "eight", category: "Numbers", emoji: "8️⃣", sentence_pt: "Tenho oito", sentence_en: "I have eight" },
+    { pt: "nove", en: "nine", category: "Numbers", emoji: "9️⃣", sentence_pt: "Tenho nove", sentence_en: "I have nine" },
+    { pt: "dez", en: "ten", category: "Numbers", emoji: "🔟", sentence_pt: "Tenho dez", sentence_en: "I have ten" },
+
+    // VERBS (10)
+    { pt: "ser", en: "to be", category: "Verbs", emoji: "🌟", sentence_pt: "Eu sou", sentence_en: "I am" },
+    { pt: "estar", en: "to be (location)", category: "Verbs", emoji: "📍", sentence_pt: "Estou aqui", sentence_en: "I am here" },
+    { pt: "ter", en: "to have", category: "Verbs", emoji: "✋", sentence_pt: "Tenho um livro", sentence_en: "I have a book" },
+    { pt: "fazer", en: "to do", category: "Verbs", emoji: "✅", sentence_pt: "Faço a lição", sentence_en: "I do homework" },
+    { pt: "ir", en: "to go", category: "Verbs", emoji: "🚶", sentence_pt: "Vou ao cinema", sentence_en: "I go to the cinema" },
+    { pt: "vir", en: "to come", category: "Verbs", emoji: "👋", sentence_pt: "Venho amanhã", sentence_en: "I come tomorrow" },
+    { pt: "falar", en: "to speak", category: "Verbs", emoji: "💬", sentence_pt: "Falo português", sentence_en: "I speak Portuguese" },
+    { pt: "comer", en: "to eat", category: "Verbs", emoji: "🍽️", sentence_pt: "Como pão", sentence_en: "I eat bread" },
+    { pt: "beber", en: "to drink", category: "Verbs", emoji: "🥤", sentence_pt: "Bebo água", sentence_en: "I drink water" },
+    { pt: "dormir", en: "to sleep", category: "Verbs", emoji: "😴", sentence_pt: "Durmo 8 horas", sentence_en: "I sleep 8 hours" },
+
+    // ADJECTIVES (10)
+    { pt: "grande", en: "big", category: "Adjectives", emoji: "📏", sentence_pt: "A casa é grande", sentence_en: "The house is big" },
+    { pt: "pequeno", en: "small", category: "Adjectives", emoji: "🤏", sentence_pt: "O gato é pequeno", sentence_en: "The cat is small" },
+    { pt: "bom", en: "good", category: "Adjectives", emoji: "👍", sentence_pt: "É um bom dia", sentence_en: "It's a good day" },
+    { pt: "mau", en: "bad", category: "Adjectives", emoji: "👎", sentence_pt: "É um mau dia", sentence_en: "It's a bad day" },
+    { pt: "bonito", en: "beautiful", category: "Adjectives", emoji: "✨", sentence_pt: "A flor é bonita", sentence_en: "The flower is beautiful" },
+    { pt: "feio", en: "ugly", category: "Adjectives", emoji: "😖", sentence_pt: "Não é feio", sentence_en: "It's not ugly" },
+    { pt: "rápido", en: "fast", category: "Adjectives", emoji: "⚡", sentence_pt: "O carro é rápido", sentence_en: "The car is fast" },
+    { pt: "lento", en: "slow", category: "Adjectives", emoji: "🐢", sentence_pt: "A tartaruga é lenta", sentence_en: "The turtle is slow" },
+    { pt: "quente", en: "hot", category: "Adjectives", emoji: "🔥", sentence_pt: "O café está quente", sentence_en: "The coffee is hot" },
+    { pt: "frio", en: "cold", category: "Adjectives", emoji: "❄️", sentence_pt: "O gelo está frio", sentence_en: "The ice is cold" },
+
+    // COMMON PHRASES (10)
+    { pt: "olá", en: "hello", category: "Phrases", emoji: "👋", sentence_pt: "Olá, como você está?", sentence_en: "Hello, how are you?" },
+    { pt: "adeus", en: "goodbye", category: "Phrases", emoji: "👋", sentence_pt: "Adeus, até logo", sentence_en: "Goodbye, see you later" },
+    { pt: "por favor", en: "please", category: "Phrases", emoji: "🙏", sentence_pt: "Por favor, ajude-me", sentence_en: "Please, help me" },
+    { pt: "obrigado", en: "thank you", category: "Phrases", emoji: "🙏", sentence_pt: "Obrigado pela ajuda", sentence_en: "Thank you for your help" },
+    { pt: "de nada", en: "you're welcome", category: "Phrases", emoji: "😊", sentence_pt: "De nada, é meu prazer", sentence_en: "You're welcome, it's my pleasure" },
+    { pt: "sim", en: "yes", category: "Phrases", emoji: "✅", sentence_pt: "Sim, concordo", sentence_en: "Yes, I agree" },
+    { pt: "não", en: "no", category: "Phrases", emoji: "❌", sentence_pt: "Não, não quero", sentence_en: "No, I don't want to" },
+    { pt: "amigo", en: "friend", category: "Phrases", emoji: "👫", sentence_pt: "É meu amigo", sentence_en: "He is my friend" },
+    { pt: "amor", en: "love", category: "Phrases", emoji: "❤️", sentence_pt: "Eu te amo", sentence_en: "I love you" },
+    { pt: "dia", en: "day", category: "Phrases", emoji: "☀️", sentence_pt: "É um bom dia", sentence_en: "It's a good day" }
+  ];
+
+  // ════════════════════════════════════════
+  // STATE
+  // ════════════════════════════════════════
+
+  let currentDeck = null;
+  let currentCardIndex = 0;
+  let isFlipped = false;
+  let deckStats = {};
+
+  // ════════════════════════════════════════
+  // FUNCTIONS
+  // ════════════════════════════════════════
+
+  function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'browse') renderBrowse();
+  }
+
+  function initDecks() {
+    const categories = [...new Set(words.map(w => w.category))];
+    const deckList = document.getElementById('deck-list');
+    deckList.innerHTML = '';
+
+    categories.forEach((cat, idx) => {
+      const catWords = words.filter(w => w.category === cat);
+      const card = document.createElement('div');
+      card.className = 'deck-card';
+      card.innerHTML = `
+        <div class="deck-emoji">${catWords[0].emoji}</div>
+        <div class="deck-name">${cat}</div>
+        <div class="deck-stats">${catWords.length} words</div>
+      `;
+      card.onclick = () => startStudy(cat);
+      deckList.appendChild(card);
+    });
+  }
+
+  function startStudy(category) {
+    currentDeck = category;
+    currentCardIndex = 0;
+    isFlipped = false;
+    showPage('study');
+    renderCard();
+    updateStats();
+  }
+
+  function renderCard() {
+    const deckWords = words.filter(w => w.category === currentDeck);
+    if (currentCardIndex >= deckWords.length) {
+      document.getElementById('study-done').style.display = 'block';
+      document.getElementById('show-ans-btn').style.display = 'none';
+      document.getElementById('rating-buttons').style.display = 'none';
+      return;
+    }
+
+    const card = deckWords[currentCardIndex];
+    document.getElementById('flashcard-tag').textContent = `🇵🇹 ${currentDeck}`;
+    document.getElementById('flashcard-emoji').textContent = card.emoji;
+    document.getElementById('flashcard-word').textContent = card.pt;
+    document.getElementById('flashcard-translit').textContent = `(${card.en})`;
+    document.getElementById('flashcard-sentence').textContent = card.sentence_pt;
+
+    document.getElementById('flashcard-back-tag').textContent = `🇬🇧 Translation`;
+    document.getElementById('flashcard-back-emoji').textContent = card.emoji;
+    document.getElementById('flashcard-answer').textContent = card.en;
+    document.getElementById('flashcard-answer-translit').textContent = ``;
+    document.getElementById('flashcard-back-sentence').textContent = card.sentence_en;
+
+    document.getElementById('flashcard').classList.remove('flipped');
+    document.getElementById('show-ans-btn').style.display = 'block';
+    document.getElementById('rating-buttons').style.display = 'none';
+    isFlipped = false;
+  }
+
+  function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('flashcard').classList.toggle('flipped');
+    if (isFlipped) {
+      document.getElementById('show-ans-btn').style.display = 'none';
+      document.getElementById('rating-buttons').style.display = 'grid';
+    }
+  }
+
+  function rateCard(rating) {
+    currentCardIndex++;
+    renderCard();
+    updateStats();
+  }
+
+  function speakWord(e) {
+    e.stopPropagation();
+    const deckWords = words.filter(w => w.category === currentDeck);
+    const card = deckWords[currentCardIndex];
+    const text = isFlipped ? card.en : card.pt;
+    const lang = isFlipped ? 'en-US' : 'pt-BR';
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    speechSynthesis.speak(utterance);
+  }
+
+  function updateStats() {
+    const deckWords = words.filter(w => w.category === currentDeck);
+    const total = deckWords.length;
+    const done = currentCardIndex;
+    const remaining = total - done;
+
+    document.getElementById('new-count').textContent = remaining;
+    document.getElementById('learning-count').textContent = '0';
+    document.getElementById('due-count').textContent = done;
+  }
+
+  function renderBrowse() {
+    const tbody = document.getElementById('cards-tbody');
+    tbody.innerHTML = '';
+    words.forEach(word => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${word.pt}</strong></td>
+        <td>${word.en}</td>
+        <td>${word.category}</td>
+        <td>${word.emoji}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function filterCards() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const rows = document.querySelectorAll('.cards-table tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(search) ? '' : 'none';
+    });
+  }
+
+  // ════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initDecks();
+  });
+</script>
+
+</body>
+</html>

@@ -57,15 +57,6 @@ export async function updateSession(
   const isProtected = matchesPrefix(pathname, PROTECTED_PREFIXES);
   const isAuthPage = matchesPrefix(pathname, AUTH_PREFIXES);
 
-  if (pathname === "/") {
-    const targetPath = user ? "/dashboard" : "/login";
-    const url = request.nextUrl.clone();
-    url.pathname = targetPath;
-    const redirectResponse = NextResponse.redirect(url);
-    copyCookies(supabaseResponse, redirectResponse);
-    return redirectResponse;
-  }
-
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
