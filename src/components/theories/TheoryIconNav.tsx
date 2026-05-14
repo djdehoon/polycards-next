@@ -26,6 +26,8 @@ export function TheoryIconNav({ theories }: Props) {
         <motion.button
           key={t.id}
           type="button"
+          aria-controls={`theory-${t.id}`}
+          aria-label={`Jump to ${t.navLabel}`}
           initial={reduce ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: reduce ? 0 : i * 0.05, duration: 0.35 }}
