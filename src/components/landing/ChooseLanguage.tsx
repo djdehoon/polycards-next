@@ -1,19 +1,26 @@
 "use client";
 
-import type { ChooseLanguageDisplay, LandingLanguage } from "@/lib/languages";
-import { LANDING_LANGUAGES } from "@/lib/languages";
+import {
+  CHOOSE_LANGUAGE_GRID_IDS,
+  LANDING_LANGUAGES,
+  type ChooseLanguageDisplay,
+  type LandingLanguage,
+} from "@/lib/languages";
 import { motion, useReducedMotion } from "framer-motion";
 import { LanguageCard } from "./LanguageCard";
 
-function hasChooseDisplay(
-  lang: LandingLanguage,
-): lang is LandingLanguage & { chooseLanguageDisplay: ChooseLanguageDisplay } {
-  return lang.chooseLanguageDisplay != null;
+function languageForGrid(
+  id: (typeof CHOOSE_LANGUAGE_GRID_IDS)[number],
+): LandingLanguage & { chooseLanguageDisplay: ChooseLanguageDisplay } {
+  const lang = LANDING_LANGUAGES.find((l) => l.id === id);
+  if (!lang?.chooseLanguageDisplay) {
+    throw new Error(`ChooseLanguage grid: missing language or display for id "${id}"`);
+  }
+  return lang as LandingLanguage & { chooseLanguageDisplay: ChooseLanguageDisplay };
 }
 
 export function ChooseLanguage() {
   const reduce = useReducedMotion();
-  const languages = LANDING_LANGUAGES.filter(hasChooseDisplay);
 
   return (
     <motion.section
@@ -34,16 +41,21 @@ export function ChooseLanguage() {
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {languages.map((lang, i) => (
-          <LanguageCard
-            key={lang.id}
-            id={lang.id}
-            label={lang.label}
-            index={i}
-            chooseLink={lang.chooseLink}
-            display={lang.chooseLanguageDisplay}
-          />
-        ))}
+        {CHOOSE_LANGUAGE_GRID_IDS.map((id, i) => {
+          const lang = languageForGrid(id);
+          const display = lang.chooseLanguageDisplay;
+          const chooseLink = display.status === "live" ? lang.chooseLink : undefined;
+          return (
+            <LanguageCard
+              key={id}
+              id={id}
+              label={lang.label}
+              index={i}
+              display={display}
+              chooseLink={chooseLink}
+            />
+          );
+        })}
       </div>
     </motion.section>
   );

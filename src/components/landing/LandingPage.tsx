@@ -108,6 +108,11 @@ export function LandingPage({ isLoggedIn }: Props) {
 
         <ChooseLanguage />
 
+        <section className="mt-16 space-y-10">
+          
+
+          
+        </section>
       </main>
     </div>
   );

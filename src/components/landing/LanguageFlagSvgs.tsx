@@ -57,6 +57,38 @@ function FlagChina() {
   );
 }
 
+/** Pan-Arab-inspired horizontal stripes (marketing simplification). */
+function FlagArabic() {
+  return (
+    <svg viewBox={vb} width={80} height={60} className="shrink-0" aria-hidden>
+      <rect width={80} height={15} fill="#007A3D" />
+      <rect y={15} width={80} height={15} fill="#FFFFFF" />
+      <rect y={30} width={80} height={15} fill="#000000" />
+      <rect y={45} width={80} height={15} fill="#CE1126" />
+    </svg>
+  );
+}
+
+function FlagFinland() {
+  return (
+    <svg viewBox={vb} width={80} height={60} className="shrink-0" aria-hidden>
+      <rect width={80} height={60} fill="#FFFFFF" />
+      <rect x={0} y={24} width={80} height={12} fill="#003580" />
+      <rect x={22} y={0} width={12} height={60} fill="#003580" />
+    </svg>
+  );
+}
+
+function FlagSweden() {
+  return (
+    <svg viewBox={vb} width={80} height={60} className="shrink-0" aria-hidden>
+      <rect width={80} height={60} fill="#006AA7" />
+      <rect x={0} y={22} width={80} height={16} fill="#FECC00" />
+      <rect x={20} y={0} width={16} height={60} fill="#FECC00" />
+    </svg>
+  );
+}
+
 type Props = { id: string };
 
 export function LanguageFlagSvg({ id }: Props) {
@@ -71,6 +103,12 @@ export function LanguageFlagSvg({ id }: Props) {
       return <FlagPoland />;
     case "chinese":
       return <FlagChina />;
+    case "arabic":
+      return <FlagArabic />;
+    case "finnish":
+      return <FlagFinland />;
+    case "swedish":
+      return <FlagSweden />;
     default:
       return <FlagUkraine />;
   }
