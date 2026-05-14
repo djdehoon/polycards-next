@@ -19,11 +19,21 @@ const site =
     ? process.env.NEXT_PUBLIC_SITE_URL
     : "http://localhost:3000";
 
+const ogTitle = "PolyCards - Learn Languages That Stick";
+const ogDescription = "5 min/day • Science-backed • Real retention";
+
 export const metadata: Metadata = {
   metadataBase: new URL(site),
-  title: { default: "PolyCards", template: "%s | PolyCards" },
-  description: "Learn Ukrainian with spaced repetition flashcards.",
+  title: { default: ogTitle, template: "%s | PolyCards" },
+  description: ogDescription,
   applicationName: "PolyCards",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -40,17 +50,26 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
+    url: "/",
     siteName: "PolyCards",
-    title: "PolyCards — Learn Ukrainian",
-    description: "Learn Ukrainian with spaced repetition flashcards.",
+    title: ogTitle,
+    description: ogDescription,
     images: [
       {
-        url: "/icons/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "PolyCards",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PolyCards - Spaced repetition for real life",
+        type: "image/png",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: ogTitle,
+    description: ogDescription,
+    images: ["/og-image.png"],
+    creator: "@polycards",
   },
 };
 

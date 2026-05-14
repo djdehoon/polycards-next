@@ -4,7 +4,11 @@ import Link from "next/link";
 import { ChooseLanguage } from "./ChooseLanguage";
 import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
 
-export function LandingPage() {
+type Props = {
+  appVersion: string;
+};
+
+export function LandingPage({ appVersion }: Props) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 font-['-apple-system','BlinkMacSystemFont','Segoe_UI',Roboto,sans-serif] text-zinc-100">
       <div
@@ -41,6 +45,7 @@ export function LandingPage() {
             Short sessions on a steady schedule—built for retention, not cramming.
             Choose a language below to practice, or read Why it works in the header.
           </p>
+          <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">{appVersion}</p>
         </section>
 
         <WhyPolyCardsWorks />

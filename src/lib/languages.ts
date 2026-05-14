@@ -89,7 +89,7 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
     flag: "🇺🇦",
     decks: threeDecks("Ukrainian", "ukrainian"),
     chooseLanguageDisplay: {
-      subtitle: "Українська ↔ English",
+      subtitle: "Українська ↔ Nederlands",
       status: "live",
       statsLine: "100 words • 10 categories",
     },
