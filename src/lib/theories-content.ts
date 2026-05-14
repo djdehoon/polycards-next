@@ -2,6 +2,7 @@ export type Theory = {
   id: string;
   navEmoji: string;
   navLabel: string;
+  navSubtitle: string;
   title: string;
   authorYear: string;
   intro: string;
@@ -16,6 +17,7 @@ export const THEORIES: Theory[] = [
     id: "spaced-repetition",
     navEmoji: "🔄",
     navLabel: "Spaced Repetition",
+    navSubtitle: "Review at the right moment",
     title: "Spaced Repetition",
     authorYear: "Ebbinghaus (1885) · modern SRS (SM-2, FSRS)",
     intro:
@@ -38,6 +40,7 @@ export const THEORIES: Theory[] = [
     id: "comprehensible-input",
     navEmoji: "🌍",
     navLabel: "Comprehensible Input",
+    navSubtitle: "Meaning-first exposure",
     title: "Comprehensible Input",
     authorYear: "Krashen (1980s) · i+1 hypothesis",
     intro:
@@ -60,6 +63,7 @@ export const THEORIES: Theory[] = [
     id: "active-recall",
     navEmoji: "🎯",
     navLabel: "Active Recall",
+    navSubtitle: "Test, then strengthen",
     title: "Active Recall (Retrieval Practice)",
     authorYear: "Roediger & Karpicke (2006) · Karpicke & Roediger (2008)",
     intro:
@@ -82,6 +86,7 @@ export const THEORIES: Theory[] = [
     id: "frequency-based",
     navEmoji: "📊",
     navLabel: "Frequency-Based",
+    navSubtitle: "High-impact words first",
     title: "Frequency-Based Learning",
     authorYear: "Zipf / corpus linguistics · high-frequency vocabulary",
     intro:
@@ -104,6 +109,7 @@ export const THEORIES: Theory[] = [
     id: "sentence-based",
     navEmoji: "📝",
     navLabel: "Sentence-Based",
+    navSubtitle: "Words in real usage",
     title: "Sentence-Based Learning",
     authorYear: "Usage-based / collocational approaches",
     intro:

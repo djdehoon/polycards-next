@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes theories-gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+.theories-hero-shimmer {
+  background: linear-gradient(
+    125deg,
+    rgba(74, 158, 255, 0.35) 0%,
+    rgba(255, 215, 0, 0.2) 40%,
+    rgba(74, 158, 255, 0.25) 80%
+  );
+  background-size: 200% 200%;
+  animation: theories-gradient-shift 12s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theories-hero-shimmer {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
