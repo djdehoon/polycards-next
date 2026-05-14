@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { LANDING_LANGUAGES } from "@/lib/languages";
+import { ChooseLanguage } from "./ChooseLanguage";
 import { DeckSelector } from "./DeckSelector";
 import { LanguageSelector } from "./LanguageSelector";
 import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
@@ -104,6 +105,8 @@ export function LandingPage({ isLoggedIn }: Props) {
         </section>
 
         <WhyPolyCardsWorks />
+
+        <ChooseLanguage />
 
         <section className="mt-16 space-y-10">
           <div>
