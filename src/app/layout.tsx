@@ -14,16 +14,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const site =
-  process.env.NEXT_PUBLIC_SITE_URL && /^https?:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL)
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : "http://localhost:3000";
+/** Public site origin for metadataBase and OG absolute URLs (WhatsApp/Facebook need HTTPS).
+ *  Order: NEXT_PUBLIC_SITE_URL (set on Vercel to the URL you share, e.g. https://yourdomain.com),
+ *  else https://VERCEL_URL on Vercel builds, else localhost for dev.
+ *  After deploy: view-source og:image; refresh cache via https://developers.facebook.com/tools/debug/ */
+function resolveSiteUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (fromEnv && /^https?:\/\//i.test(fromEnv)) {
+    return fromEnv.replace(/\/+$/, "");
+  }
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    const host = vercel.replace(/^https?:\/\//i, "");
+    return `https://${host}`;
+  }
+  return "http://localhost:3000";
+}
+
+const siteUrl = resolveSiteUrl();
+const metadataBase = new URL(siteUrl);
+const ogImageUrl = new URL("/og-image.png", metadataBase).href;
+const ogPageUrl = new URL("/", metadataBase).href;
 
 const ogTitle = "PolyCards - Learn Languages That Stick";
 const ogDescription = "5 min/day • Science-backed • Real retention";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site),
+  metadataBase,
   title: { default: ogTitle, template: "%s | PolyCards" },
   description: ogDescription,
   applicationName: "PolyCards",
@@ -50,13 +67,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "/",
+    url: ogPageUrl,
     siteName: "PolyCards",
     title: ogTitle,
     description: ogDescription,
     images: [
       {
-        url: "/og-image.png",
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: "PolyCards - Spaced repetition for real life",
@@ -68,7 +85,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: ogTitle,
     description: ogDescription,
-    images: ["/og-image.png"],
+    images: [ogImageUrl],
     creator: "@polycards",
   },
 };

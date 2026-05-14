@@ -37,7 +37,9 @@ const svg = `
         font-size="24" font-weight="500" fill="#1e293b">Spaced repetition for real life</text>
 </svg>`;
 
-const buf = await sharp(Buffer.from(svg)).png().toBuffer();
+const buf = await sharp(Buffer.from(svg))
+  .png({ compressionLevel: 9, effort: 10 })
+  .toBuffer();
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, buf);
 console.log("wrote", out);
