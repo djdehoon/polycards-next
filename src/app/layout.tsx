@@ -17,7 +17,11 @@ const geistMono = Geist_Mono({
 /** Public site origin for metadataBase and OG absolute URLs (WhatsApp/Facebook need HTTPS).
  *  Order: NEXT_PUBLIC_SITE_URL (set on Vercel to the URL you share, e.g. https://yourdomain.com),
  *  else https://VERCEL_URL on Vercel builds, else localhost for dev.
- *  After deploy: view-source og:image; refresh cache via https://developers.facebook.com/tools/debug/ */
+ *
+ *  After replacing OG art: bump OG_IMAGE_CACHE_BUST below, deploy, then:
+ *  - Production: View page source, confirm og:image is https and opens the new asset.
+ *  - https://developers.facebook.com/tools/debug/ — paste URL, Scrape Again (2× if needed).
+ *  - WhatsApp: retest; try mobile/web if Desktop preview is empty; page link ?x=1 can bust link cache. */
 function resolveSiteUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (fromEnv && /^https?:\/\//i.test(fromEnv)) {
@@ -33,7 +37,9 @@ function resolveSiteUrl(): string {
 
 const siteUrl = resolveSiteUrl();
 const metadataBase = new URL(siteUrl);
-const ogImageUrl = new URL("/og-image.png?v=2", metadataBase).href;
+/** Increment when replacing public/og-image.png so crawlers/CDN fetch a new og:image URL. */
+const OG_IMAGE_CACHE_BUST = "3";
+const ogImageUrl = new URL(`/og-image.png?v=${OG_IMAGE_CACHE_BUST}`, metadataBase).href;
 const ogPageUrl = new URL("/", metadataBase).href;
 
 const ogTitle = "PolyCards - Learn Languages That Stick";
