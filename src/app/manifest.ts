@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait-primary",
-    theme_color: "#059669",
-    background_color: "#0f0f0f",
+    theme_color: "#0057B8",
+    background_color: "#ffffff",
     categories: ["education", "productivity"],
     icons: [
       {
@@ -36,6 +36,11 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
+      },
+      {
+        src: "/icons/apple-touch-icon-180.png",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
     shortcuts: [

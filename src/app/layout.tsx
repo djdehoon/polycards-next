@@ -31,7 +31,10 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false },
   icons: {
-    icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
+    icon: [
+      { url: "/icons/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
     apple: [{ url: "/icons/apple-touch-icon-180.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
@@ -52,7 +55,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#059669",
+  themeColor: "#0057B8",
   width: "device-width",
   initialScale: 1,
 };
