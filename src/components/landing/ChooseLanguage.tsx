@@ -32,6 +32,7 @@ export function ChooseLanguage() {
             flag={lang.flag}
             label={lang.label}
             index={i}
+            chooseLink={lang.chooseLink}
           />
         ))}
       </div>
