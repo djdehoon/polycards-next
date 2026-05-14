@@ -34,19 +34,19 @@ export function TheoryCard({ theory }: Props) {
           {theory.title}
         </h2>
         <div
-          className="mx-auto mt-3 h-0.5 w-20 rounded-full bg-gradient-to-r from-[#4a9eff] to-[#ffd700]"
+          className="mx-auto mt-3 h-0.5 w-20 rounded-full bg-gradient-to-r from-emerald-500/90 to-teal-500/70"
           aria-hidden
         />
-        <p className="mt-2 text-sm text-[#4a9eff]">{theory.authorYear}</p>
-        <p className="mt-6 text-base leading-relaxed text-[#b0b0b0]">{theory.intro}</p>
+        <p className="mt-2 text-sm text-emerald-400/85">{theory.authorYear}</p>
+        <p className="mt-6 text-base leading-relaxed text-zinc-400">{theory.intro}</p>
 
-        <h3 className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#b0b0b0]">
+        <h3 className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
           Key principles
         </h3>
         <ul className="mt-4 list-none space-y-3">
           {theory.principles.map((p) => (
             <li key={p}>
-              <span className="inline-block rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-[#b0b0b0]">
+              <span className="inline-block rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-zinc-400">
                 {p}
               </span>
             </li>
@@ -54,17 +54,17 @@ export function TheoryCard({ theory }: Props) {
         </ul>
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.06] p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-white">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
             Scientific evidence
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-[#b0b0b0]">{theory.evidence}</p>
+          <p className="mt-3 text-sm leading-relaxed text-zinc-400">{theory.evidence}</p>
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-transparent bg-gradient-to-r from-[#4a9eff] to-[#ffd700] bg-clip-text">
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400/95">
             PolyCards application
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-white">
+          <p className="mt-3 text-sm leading-relaxed text-zinc-200">
             {theory.polycardsApplication}
           </p>
         </div>
@@ -74,7 +74,7 @@ export function TheoryCard({ theory }: Props) {
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
           onClick={() => setOpen((v) => !v)}
-          className="mx-auto mt-8 flex w-full max-w-md items-center justify-center rounded-2xl bg-gradient-to-r from-[#4a9eff] to-[#ffd700] px-6 py-3.5 text-sm font-semibold text-[#080808] shadow-lg shadow-[#4a9eff]/25 transition hover:brightness-110"
+          className="mx-auto mt-8 flex w-full max-w-md items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-500"
         >
           {open ? "Show less" : "Learn more"}
         </button>
@@ -88,7 +88,7 @@ export function TheoryCard({ theory }: Props) {
               animate={{ opacity: 1, y: 0 }}
               exit={reduce ? undefined : { opacity: 0, y: -8 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm leading-relaxed text-[#b0b0b0]"
+              className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm leading-relaxed text-zinc-400"
             >
               {theory.detailParagraphs.map((para, idx) => (
                 <p key={idx}>{para}</p>

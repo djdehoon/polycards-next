@@ -17,36 +17,36 @@ export const metadata: Metadata = {
 export default function TheoriesPage() {
   return (
     <div
-      className="relative min-h-screen overflow-hidden bg-[#080808] text-white font-['-apple-system','BlinkMacSystemFont','Segoe_UI',Roboto,sans-serif]"
+      className="relative min-h-screen overflow-hidden bg-zinc-950 text-white font-['-apple-system','BlinkMacSystemFont','Segoe_UI',Roboto,sans-serif]"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(74,158,255,0.18),transparent)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_-8%,rgba(16,185,129,0.12),transparent)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_0%_40%,rgba(74,158,255,0.12),transparent)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_0%_45%,rgba(63,63,70,0.35),transparent)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_100%_70%,rgba(255,215,0,0.12),transparent)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_100%_75%,rgba(16,185,129,0.08),transparent)]"
         aria-hidden
       />
 
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#080808]/80 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-zinc-950/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-[800px] flex-wrap items-center justify-between gap-3 px-6 py-4">
           <Link
             href="/"
-            className="text-lg font-semibold tracking-tight text-white transition hover:text-[#4a9eff]"
+            className="text-lg font-semibold tracking-tight text-white transition hover:text-emerald-400"
           >
             🇺🇦 PolyCards
           </Link>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="hidden text-sm text-[#b0b0b0] sm:block">
+            <p className="hidden text-sm text-zinc-400 sm:block">
               Why PolyCards Works
             </p>
             <Link
               href="/"
-              className="rounded-lg border border-white/15 bg-white/[0.05] px-3 py-1.5 text-sm text-white transition hover:border-[#4a9eff]/50 hover:bg-white/[0.08]"
+              className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-sm text-zinc-200 transition hover:border-emerald-500/35 hover:bg-white/[0.08] hover:text-white"
             >
               ← Home
             </Link>

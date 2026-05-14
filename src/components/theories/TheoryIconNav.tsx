@@ -8,9 +8,9 @@ type Props = {
 };
 
 const glowRest =
-  "0 0 0 1px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.45)";
+  "0 0 0 1px rgba(255,255,255,0.08), 0 10px 36px rgba(0,0,0,0.4)";
 const glowHover =
-  "0 0 0 1px rgba(74,158,255,0.35), 0 0 28px rgba(74,158,255,0.35), 0 0 48px rgba(255,215,0,0.15), 0 16px 48px rgba(0,0,0,0.5)";
+  "0 0 0 1px rgba(16,185,129,0.45), 0 0 28px rgba(16,185,129,0.22), 0 14px 40px rgba(0,0,0,0.45)";
 
 export function TheoryIconNav({ theories }: Props) {
   const reduce = useReducedMotion();
@@ -24,13 +24,13 @@ export function TheoryIconNav({ theories }: Props) {
 
   return (
     <nav
-      className="mx-auto grid w-full max-w-[800px] grid-cols-1 justify-items-center gap-6 sm:grid-cols-3 lg:grid-cols-5"
+      className="mx-auto flex w-full max-w-[800px] flex-wrap justify-center gap-4"
       aria-label="Jump to a theory"
     >
       {theories.map((t, i) => (
         <motion.div
           key={t.id}
-          className="w-full rounded-2xl bg-gradient-to-br from-[#4a9eff] to-[#ffd700] p-px shadow-lg"
+          className="w-[148px] shrink-0 sm:w-[156px]"
           initial={reduce ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: reduce ? 0 : i * 0.1, duration: 0.4, ease: "easeOut" }}
@@ -47,7 +47,7 @@ export function TheoryIconNav({ theories }: Props) {
             whileTap={reduce ? undefined : { scale: 0.98 }}
             style={{ boxShadow: glowRest }}
             onClick={() => scrollTo(t.id)}
-            className="flex w-full flex-col items-center gap-2 rounded-2xl bg-white/[0.05] px-4 py-5 text-center backdrop-blur-md transition-colors hover:bg-white/[0.08]"
+            className="flex w-full flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-5 text-center backdrop-blur-md transition-colors hover:border-emerald-500/35 hover:bg-white/[0.08]"
           >
             <span className="text-3xl" aria-hidden>
               {t.navEmoji}
@@ -55,7 +55,7 @@ export function TheoryIconNav({ theories }: Props) {
             <span className="text-sm font-semibold leading-tight text-white">
               {t.navLabel}
             </span>
-            <span className="text-xs leading-snug text-[#b0b0b0]">{t.navSubtitle}</span>
+            <span className="text-xs leading-snug text-zinc-400">{t.navSubtitle}</span>
           </motion.button>
         </motion.div>
       ))}

@@ -26,7 +26,7 @@ export function LanguageSelector({ languages, selectedId, onSelect }: Props) {
             onClick={() => onSelect(lang.id)}
             className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition ${
               selected
-                ? "border-violet-400/70 bg-violet-500/15 shadow-lg shadow-violet-900/20 ring-2 ring-violet-400/50"
+                ? "border-emerald-500/50 bg-emerald-500/12 shadow-lg shadow-emerald-950/20 ring-2 ring-emerald-500/45"
                 : "border-zinc-700/80 bg-zinc-900/40 hover:border-zinc-500 hover:bg-zinc-800/50"
             }`}
           >
