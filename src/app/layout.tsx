@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { APP_VERSION } from "@/lib/app-version";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <footer
+          className="pointer-events-none fixed bottom-3 right-4 z-50 rounded-md border border-zinc-700/60 bg-zinc-950/85 px-2 py-1 text-xs text-zinc-400 backdrop-blur-sm"
+          aria-label={`App version ${APP_VERSION}`}
+        >
+          {APP_VERSION}
+        </footer>
+      </body>
     </html>
   );
 }

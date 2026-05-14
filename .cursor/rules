@@ -109,3 +109,16 @@ style: styling only
 ## 🔔 TASK COMPLETION
 After completing ANY task, always end your final message with:
 "✅ DONE — Check required"
+
+## 🔁 VERPLICHTE WORKFLOW (ALTIJD VOLGEN)
+
+Na elke taak:
+1. Genereer wijzigingen (Cursor)
+2. Test lokaal EERST (localhost:3001)
+3. Keep All PAS NA testen
+4. Commit DAARNA naar GitHub
+5. Dan pas verder naar volgende taak
+
+NOOIT: Keep All zonder testen
+NOOIT: Committen zonder testen
+NOOIT: Volgende blok starten zonder vorige te testen
