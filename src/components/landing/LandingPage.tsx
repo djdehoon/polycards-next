@@ -108,52 +108,6 @@ export function LandingPage({ isLoggedIn }: Props) {
 
         <ChooseLanguage />
 
-        <section className="mt-16 space-y-10">
-          <div>
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500">
-              Step 1 — Language
-            </h2>
-            <LanguageSelector
-              languages={LANDING_LANGUAGES}
-              selectedId={languageId}
-              onSelect={selectLanguage}
-            />
-          </div>
-
-          <div
-            className={`transition-all duration-300 ease-out ${
-              languageId
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none -translate-y-2 opacity-40"
-            }`}
-          >
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500">
-              Step 2 — Deck
-            </h2>
-            <DeckSelector
-              decks={decks}
-              selectedSlug={deckSlug}
-              onSelect={setDeckSlug}
-              disabled={!languageId}
-            />
-          </div>
-
-          <div className="flex flex-col items-center gap-3 pt-4 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              disabled={!canStart}
-              onClick={startLearning}
-              className="inline-flex min-w-[200px] items-center justify-center rounded-xl bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-950/30 transition enabled:hover:bg-emerald-500 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Start Learning
-            </button>
-            {!canStart ? (
-              <p className="text-center text-xs text-zinc-500 sm:text-left">
-                Select a language and a deck to continue.
-              </p>
-            ) : null}
-          </div>
-        </section>
       </main>
     </div>
   );
