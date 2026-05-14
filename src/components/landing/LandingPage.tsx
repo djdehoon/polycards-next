@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { LANDING_LANGUAGES } from "@/lib/languages";
 import { DeckSelector } from "./DeckSelector";
 import { LanguageSelector } from "./LanguageSelector";
+import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
 
 type Props = {
   isLoggedIn: boolean;
@@ -52,6 +53,12 @@ export function LandingPage({ isLoggedIn }: Props) {
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-4 py-6 sm:px-6">
         <span className="text-lg font-semibold tracking-tight">PolyCards</span>
         <nav className="flex items-center gap-3 text-sm">
+          <Link
+            href="/theories"
+            className="text-zinc-400 transition hover:text-white"
+          >
+            Why it works
+          </Link>
           {isLoggedIn ? (
             <Link
               href="/dashboard"
@@ -95,6 +102,8 @@ export function LandingPage({ isLoggedIn }: Props) {
             PolyCards—built for steady progress, not cramming.
           </p>
         </section>
+
+        <WhyPolyCardsWorks />
 
         <section className="mt-16 space-y-10">
           <div>
