@@ -10,8 +10,8 @@
 You are building "PolyCards" — a flashcard app for language learners.
 Users study vocabulary using Spaced Repetition (SM-2 algorithm).
 The app has 100 Ukrainian words in 10 decks, stored in Supabase.
-Stack: Next.js 14 + TypeScript + Tailwind CSS + Supabase + Vercel.
-Current version: v0.2.3 (Block 6 shipped: Dashboard, Browse, Stats, Navigation)
+Stack: Next.js 14 + TypeScript + Tailwind CSS + Supabase + polycards.
+Current version: v0.2.4 (Block 6 shipped: Dashboard, Browse, Stats, Navigation)
 Next: Block 7 (Polish + responsive)
 
 ## 🗄️ DATABASE (Supabase)
