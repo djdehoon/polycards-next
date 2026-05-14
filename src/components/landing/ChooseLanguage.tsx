@@ -1,20 +1,23 @@
 "use client";
 
 import {
-  CHOOSE_LANGUAGE_GRID_IDS,
+  CHOOSE_LANGUAGE_GRID_ROWS,
   LANDING_LANGUAGES,
   type ChooseLanguageDisplay,
+  type ChooseLanguageGridRow,
   type LandingLanguage,
 } from "@/lib/languages";
 import { motion, useReducedMotion } from "framer-motion";
 import { LanguageCard } from "./LanguageCard";
 
-function languageForGrid(
-  id: (typeof CHOOSE_LANGUAGE_GRID_IDS)[number],
+function languageForGridRow(
+  row: ChooseLanguageGridRow,
 ): LandingLanguage & { chooseLanguageDisplay: ChooseLanguageDisplay } {
-  const lang = LANDING_LANGUAGES.find((l) => l.id === id);
+  const lang = LANDING_LANGUAGES.find((l) => l.id === row.languageId);
   if (!lang?.chooseLanguageDisplay) {
-    throw new Error(`ChooseLanguage grid: missing language or display for id "${id}"`);
+    throw new Error(
+      `ChooseLanguage grid: missing language or display for languageId "${row.languageId}" (row "${row.rowKey}")`,
+    );
   }
   return lang as LandingLanguage & { chooseLanguageDisplay: ChooseLanguageDisplay };
 }
@@ -41,14 +44,15 @@ export function ChooseLanguage() {
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {CHOOSE_LANGUAGE_GRID_IDS.map((id, i) => {
-          const lang = languageForGrid(id);
+        {CHOOSE_LANGUAGE_GRID_ROWS.map((row, i) => {
+          const lang = languageForGridRow(row);
           const display = lang.chooseLanguageDisplay;
-          const chooseLink = display.status === "live" ? lang.chooseLink : undefined;
+          const chooseLink =
+            display.status === "live" ? (row.linkOverride ?? lang.chooseLink) : undefined;
           return (
             <LanguageCard
-              key={id}
-              id={id}
+              key={row.rowKey}
+              id={row.languageId}
               label={lang.label}
               index={i}
               display={display}

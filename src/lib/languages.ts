@@ -8,7 +8,7 @@ export type ChooseLanguageLink = {
   href: string;
   target: "_self" | "_blank";
   buttonText: string;
-  /** `true`: `next/link`. `false`: `<a>` for static HTML under `/public`. */
+  /** `true`: `next/link` (in-app routes). `false`: `<a>` for `/languages/...`, static files, or external URLs. */
   useNextLink: boolean;
 };
 
@@ -36,19 +36,43 @@ export type LandingLanguage = {
   chooseLanguageDisplay?: ChooseLanguageDisplay;
 };
 
-/** Fixed order for the Choose Language marketing grid (Portuguese is 5th). */
-export const CHOOSE_LANGUAGE_GRID_IDS = [
-  "ukrainian",
-  "spanish",
-  "polish",
-  "chinese",
-  "portuguese",
-  "arabic",
-  "finnish",
-  "swedish",
-] as const;
+/** One cell in the Choose Language grid (may repeat `languageId` with different links). */
+export type ChooseLanguageGridRow = {
+  rowKey: string;
+  languageId: string;
+  linkOverride?: ChooseLanguageLink;
+};
 
-export type ChooseLanguageGridId = (typeof CHOOSE_LANGUAGE_GRID_IDS)[number];
+/** Grid order: Portuguese 5th; first Ukrainian → Netlify; last Ukrainian → /dashboard. */
+export const CHOOSE_LANGUAGE_GRID_ROWS: ChooseLanguageGridRow[] = [
+  {
+    rowKey: "ukrainian-netlify",
+    languageId: "ukrainian",
+    linkOverride: {
+      href: "https://polycards.netlify.app/indexnew.html",
+      target: "_blank",
+      buttonText: "Start Learning",
+      useNextLink: false,
+    },
+  },
+  { rowKey: "spanish", languageId: "spanish" },
+  { rowKey: "polish", languageId: "polish" },
+  { rowKey: "chinese", languageId: "chinese" },
+  { rowKey: "portuguese", languageId: "portuguese" },
+  { rowKey: "arabic", languageId: "arabic" },
+  { rowKey: "finnish", languageId: "finnish" },
+  { rowKey: "swedish", languageId: "swedish" },
+  {
+    rowKey: "ukrainian-dashboard",
+    languageId: "ukrainian",
+    linkOverride: {
+      href: "/dashboard",
+      target: "_self",
+      buttonText: "Work in progress",
+      useNextLink: true,
+    },
+  },
+];
 
 function threeDecks(langLabel: string, prefix: string): LandingDeck[] {
   return [
@@ -64,12 +88,6 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
     label: "Ukrainian",
     flag: "🇺🇦",
     decks: threeDecks("Ukrainian", "ukrainian"),
-    chooseLink: {
-      href: "/dashboard",
-      target: "_self",
-      buttonText: "Start Learning",
-      useNextLink: true,
-    },
     chooseLanguageDisplay: {
       subtitle: "Українська ↔ English",
       status: "live",
