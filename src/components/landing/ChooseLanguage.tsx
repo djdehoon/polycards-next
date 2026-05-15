@@ -27,7 +27,8 @@ export function ChooseLanguage() {
 
   return (
     <motion.section
-      className="mx-auto mt-16 max-w-[800px] rounded-3xl border border-[#333] bg-[#0f0f0f]/95 px-6 py-10 text-center shadow-2xl shadow-black/60 backdrop-blur-md sm:px-10 sm:py-12"
+      id="choose-language"
+      className="mx-auto mt-16 scroll-mt-24 max-w-[800px] rounded-3xl border border-[#333] bg-[#0f0f0f]/95 px-6 py-10 text-center shadow-2xl shadow-black/60 backdrop-blur-md sm:px-10 sm:py-12"
       initial={reduce ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
