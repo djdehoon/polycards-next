@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChooseLanguage } from "./ChooseLanguage";
+import { OgImageBanner } from "./OgImageBanner";
 import { PrototypeSection } from "./PrototypeSection";
 import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
 
@@ -58,7 +59,8 @@ export function LandingPage({ appVersion }: Props) {
           <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">{appVersion}</p>
         </section>
 
-        
+        <OgImageBanner />
+
         <WhyPolyCardsWorks />
         <PrototypeSection />
 
