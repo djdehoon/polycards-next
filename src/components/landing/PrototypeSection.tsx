@@ -8,6 +8,16 @@ const CARD_CLASS =
 
 const INVOLVE_CARDS = [
   {
+    id: "try",
+    icon: "🚀",
+    title: "Try now",
+    description:
+      "Some simple language tools to play with are free available to use. The more advanced language tool(s) will follow soon.",
+    footer: "Explore below →",
+    kind: "link" as const,
+  },
+  
+  {
     id: "beta",
     icon: "🎯",
     title: "Beta tester",
@@ -24,15 +34,6 @@ const INVOLVE_CARDS = [
       "Receive updates as we build. No commitment—just stay in the loop on what ships next.",
     footer: "Coming soon",
     kind: "soon" as const,
-  },
-  {
-    id: "try",
-    icon: "🚀",
-    title: "Try now",
-    description:
-      "Some simple language tools to play with are free available to use. The more advanced language tool(s) will follow soon.",
-    footer: "Explore below →",
-    kind: "link" as const,
   },
 ] as const;
 

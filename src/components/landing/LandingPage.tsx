@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChooseLanguage } from "./ChooseLanguage";
+import { PrototypeSection } from "./PrototypeSection";
 import { WhyPolyCardsWorks } from "./WhyPolyCardsWorks";
 
 type Props = {
@@ -15,7 +16,10 @@ export function LandingPage({ appVersion }: Props) {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(16,185,129,0.14),transparent)]"
         aria-hidden
       />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(63,63,70,0.25),transparent)]" />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(63,63,70,0.25),transparent)]"
+        aria-hidden
+      />
 
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-4 py-6 sm:px-6">
         <span className="text-lg font-semibold tracking-tight">PolyCards</span>
@@ -25,6 +29,12 @@ export function LandingPage({ appVersion }: Props) {
             className="text-zinc-400 transition hover:text-emerald-400"
           >
             Why it works
+          </Link>
+          <Link
+            href="#early-access"
+            className="text-zinc-400 transition hover:text-emerald-400"
+          >
+            Early access
           </Link>
         </nav>
       </header>
@@ -48,7 +58,9 @@ export function LandingPage({ appVersion }: Props) {
           <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">{appVersion}</p>
         </section>
 
+        
         <WhyPolyCardsWorks />
+        <PrototypeSection />
 
         <ChooseLanguage />
       </main>
