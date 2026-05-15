@@ -15,9 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 /** Public site origin for metadataBase and OG absolute URLs (WhatsApp/Facebook need HTTPS).
- *  Order: NEXT_PUBLIC_SITE_URL (set on Vercel to https://polycards.nl for production),
- *  else https://VERCEL_URL on Vercel builds, else https://polycards.nl in production,
- *  else http://localhost:3000 for local dev.
+ *  Order: NEXT_PUBLIC_SITE_URL, then https://polycards.nl on Vercel production (before VERCEL_URL),
+ *  else VERCEL_URL for preview deploys, else localhost for dev.
  *
  *  After replacing OG art: bump OG_IMAGE_CACHE_BUST below, deploy, then:
  *  - Production: View page source, confirm og:image is https and opens the new asset.
@@ -28,22 +27,24 @@ function resolveSiteUrl(): string {
   if (fromEnv && /^https?:\/\//i.test(fromEnv)) {
     return fromEnv.replace(/\/+$/, "");
   }
+  if (process.env.VERCEL_ENV === "production") {
+    return "https://polycards.nl";
+  }
   const vercel = process.env.VERCEL_URL?.trim();
   if (vercel) {
     const host = vercel.replace(/^https?:\/\//i, "");
     return `https://${host}`;
-  }
-  if (process.env.NODE_ENV === "production") {
-    return "https://polycards.nl";
   }
   return "http://localhost:3000";
 }
 
 const siteUrl = resolveSiteUrl();
 const metadataBase = new URL(siteUrl);
-/** Increment when replacing public/og-image.png so crawlers/CDN fetch a new og:image URL. */
-const OG_IMAGE_CACHE_BUST = "4";
-const ogImageUrl = new URL(`/og-image.png?v=${OG_IMAGE_CACHE_BUST}`, metadataBase).href;
+/** Increment when replacing OG art; run npm run compress:og-social after updating public/og-image.png. */
+const OG_IMAGE_CACHE_BUST = "5";
+/** JPEG for crawlers (smaller than full PNG); landing banner still uses /og-image.png */
+const OG_IMAGE_PATH = "/og-image-social.jpg";
+const ogImageUrl = new URL(`${OG_IMAGE_PATH}?v=${OG_IMAGE_CACHE_BUST}`, metadataBase).href;
 const ogPageUrl = new URL("/", metadataBase).href;
 
 const ogTitle = "PolyCards - Learn Languages That Stick";
@@ -87,7 +88,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "PolyCards - Spaced repetition for real life",
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },

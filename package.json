@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
-    "generate:og-image": "node scripts/generate-og-image.mjs"
+    "generate:og-image": "node scripts/generate-og-image.mjs",
+    "compress:og-social": "node scripts/compress-og-social.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
