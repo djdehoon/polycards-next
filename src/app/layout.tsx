@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 /** Public site origin for metadataBase and OG absolute URLs (WhatsApp/Facebook need HTTPS).
- *  Order: NEXT_PUBLIC_SITE_URL (set on Vercel to the URL you share, e.g. https://yourdomain.com),
- *  else https://VERCEL_URL on Vercel builds, else localhost for dev.
+ *  Order: NEXT_PUBLIC_SITE_URL (set on Vercel to https://polycards.nl for production),
+ *  else https://VERCEL_URL on Vercel builds, else https://polycards.nl in production,
+ *  else http://localhost:3000 for local dev.
  *
  *  After replacing OG art: bump OG_IMAGE_CACHE_BUST below, deploy, then:
  *  - Production: View page source, confirm og:image is https and opens the new asset.
@@ -32,13 +33,16 @@ function resolveSiteUrl(): string {
     const host = vercel.replace(/^https?:\/\//i, "");
     return `https://${host}`;
   }
+  if (process.env.NODE_ENV === "production") {
+    return "https://polycards.nl";
+  }
   return "http://localhost:3000";
 }
 
 const siteUrl = resolveSiteUrl();
 const metadataBase = new URL(siteUrl);
 /** Increment when replacing public/og-image.png so crawlers/CDN fetch a new og:image URL. */
-const OG_IMAGE_CACHE_BUST = "3";
+const OG_IMAGE_CACHE_BUST = "4";
 const ogImageUrl = new URL(`/og-image.png?v=${OG_IMAGE_CACHE_BUST}`, metadataBase).href;
 const ogPageUrl = new URL("/", metadataBase).href;
 
