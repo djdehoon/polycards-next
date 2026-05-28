@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 export type FlipCardProps = {
   word: string;
   translation: string;
-  onFlippedChange?: (flipped: boolean) => void;
   disabled?: boolean;
 };
 
@@ -15,24 +14,18 @@ const faceBase =
 export function FlipCard({
   word,
   translation,
-  onFlippedChange,
   disabled = false,
 }: FlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
     setIsFlipped(false);
-    onFlippedChange?.(false);
-  }, [word, onFlippedChange]);
+  }, [word]);
 
   const handleFlip = useCallback(() => {
     if (disabled) return;
-    setIsFlipped((prev) => {
-      const next = !prev;
-      onFlippedChange?.(next);
-      return next;
-    });
-  }, [disabled, onFlippedChange]);
+    setIsFlipped((prev) => !prev);
+  }, [disabled]);
 
   return (
     <div className="[perspective:1200px]">

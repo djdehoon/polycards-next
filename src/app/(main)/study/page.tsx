@@ -152,7 +152,6 @@ function StudySession() {
   const [unauthenticated, setUnauthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -192,7 +191,6 @@ function StudySession() {
       setItems(result.items);
       setUserId(result.userId);
       setIndex(0);
-      setFlipped(false);
       setLoading(false);
     })();
 
@@ -214,13 +212,11 @@ function StudySession() {
   const canGoNext = index < items.length - 1;
 
   const goNext = useCallback(() => {
-    setFlipped(false);
     setIndex((i) => i + 1);
   }, []);
 
   const goPrevious = useCallback(() => {
     if (!hasCards || saving || index <= 0) return;
-    setFlipped(false);
     setIndex((i) => i - 1);
   }, [hasCards, saving, index]);
 
@@ -363,7 +359,6 @@ function StudySession() {
         word={current!.word.term}
         translation={current!.word.translation}
         disabled={saving}
-        onFlippedChange={setFlipped}
       />
 
       {saveError ? (
@@ -390,56 +385,50 @@ function StudySession() {
             <span className="hidden sm:inline">← Previous</span>
           </button>
 
-          {flipped ? (
-            <>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void onRate(1);
-                }}
-                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-              >
-                ❌ Again
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void onRate(2);
-                }}
-                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-              >
-                😓 Hard
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void onRate(3);
-                }}
-                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-              >
-                👍 Good
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void onRate(4);
-                }}
-                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-              >
-                🎉 Easy
-              </button>
-            </>
-          ) : (
-            <div className="min-w-[1rem] flex-1" aria-hidden="true" />
-          )}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={(e) => {
+              e.stopPropagation();
+              void onRate(1);
+            }}
+            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+          >
+            ❌ Again
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={(e) => {
+              e.stopPropagation();
+              void onRate(2);
+            }}
+            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+          >
+            😓 Hard
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={(e) => {
+              e.stopPropagation();
+              void onRate(3);
+            }}
+            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+          >
+            👍 Good
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={(e) => {
+              e.stopPropagation();
+              void onRate(4);
+            }}
+            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+          >
+            🎉 Easy
+          </button>
 
           <button
             type="button"
