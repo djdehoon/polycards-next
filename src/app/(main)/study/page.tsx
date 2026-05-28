@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState, startTransition } from "react";
 import { useSearchParams } from "next/navigation";
+import { FlipCard } from "@/components/study/FlipCard";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
   type ProgressRow,
@@ -209,15 +210,24 @@ function StudySession() {
     index >= items.length;
   const hasCards = items.length > 0 && index < items.length;
 
+  const canGoPrevious = index > 0;
+  const canGoNext = index < items.length - 1;
+
   const goNext = useCallback(() => {
     setFlipped(false);
     setIndex((i) => i + 1);
   }, []);
 
-  const toggleFlip = useCallback(() => {
-    if (!hasCards) return;
-    setFlipped((f) => !f);
-  }, [hasCards]);
+  const goPrevious = useCallback(() => {
+    if (!hasCards || saving || index <= 0) return;
+    setFlipped(false);
+    setIndex((i) => i - 1);
+  }, [hasCards, saving, index]);
+
+  const handleNext = useCallback(() => {
+    if (!hasCards || saving || index >= items.length - 1) return;
+    goNext();
+  }, [hasCards, saving, index, items.length, goNext]);
 
   const onRate = useCallback(
     async (score: 1 | 2 | 3 | 4) => {
@@ -348,40 +358,13 @@ function StudySession() {
         </Link>
       </div>
 
-      <div className="[perspective:1200px]">
-        <button
-          type="button"
-          onClick={toggleFlip}
-          disabled={saving}
-          className="relative h-56 w-full cursor-pointer border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:opacity-50"
-          aria-label={flipped ? "Toon voorkant" : "Toon achterkant"}
-        >
-          <div
-            className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${
-              flipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]"
-            }`}
-          >
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-800 px-6 shadow-xl [backface-visibility:hidden]">
-              <span className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Oekraïens
-              </span>
-              <p className="text-center text-2xl font-semibold text-zinc-50">
-                {current!.word.term}
-              </p>
-              <span className="mt-4 text-xs text-zinc-500">Klik om te draaien</span>
-            </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-800 px-6 shadow-xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <span className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Nederlands
-              </span>
-              <p className="text-center text-2xl font-semibold text-zinc-50">
-                {current!.word.translation}
-              </p>
-              <span className="mt-4 text-xs text-zinc-500">Klik om te draaien</span>
-            </div>
-          </div>
-        </button>
-      </div>
+      <FlipCard
+        key={current!.word.id}
+        word={current!.word.term}
+        translation={current!.word.translation}
+        disabled={saving}
+        onFlippedChange={setFlipped}
+      />
 
       {saveError ? (
         <p className="mt-4 text-center text-sm text-red-400" role="alert">
@@ -389,51 +372,89 @@ function StudySession() {
         </p>
       ) : null}
 
-      {flipped ? (
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {hasCards ? (
+        <div className="mt-8 flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-3">
           <button
             type="button"
-            disabled={saving}
+            disabled={saving || !canGoPrevious}
             onClick={(e) => {
               e.stopPropagation();
-              void onRate(1);
+              goPrevious();
             }}
-            className="rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
+            className="shrink-0 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
+            aria-label="Previous"
           >
-            ❌ Again
+            <span className="sm:hidden" aria-hidden>
+              ←
+            </span>
+            <span className="hidden sm:inline">← Previous</span>
           </button>
+
+          {flipped ? (
+            <>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(1);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                ❌ Again
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(2);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                😓 Hard
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(3);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                👍 Good
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(4);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                🎉 Easy
+              </button>
+            </>
+          ) : (
+            <div className="min-w-[1rem] flex-1" aria-hidden="true" />
+          )}
+
           <button
             type="button"
-            disabled={saving}
+            disabled={saving || !canGoNext}
             onClick={(e) => {
               e.stopPropagation();
-              void onRate(2);
+              handleNext();
             }}
-            className="rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
+            className="shrink-0 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
+            aria-label="Next"
           >
-            😓 Hard
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(3);
-            }}
-            className="rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
-          >
-            👍 Good
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(4);
-            }}
-            className="rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
-          >
-            🎉 Easy
+            <span className="sm:hidden" aria-hidden>
+              →
+            </span>
+            <span className="hidden sm:inline">Next →</span>
           </button>
         </div>
       ) : null}
