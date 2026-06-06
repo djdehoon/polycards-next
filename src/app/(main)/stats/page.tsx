@@ -1,12 +1,18 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgressRow } from "@/lib/srs";
+import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import {
   deckWordStats,
   percentLearned,
-  studyStreakDays,
   utcTodayString,
+  addUtcDays,
 } from "@/lib/stats-helpers";
+import {
+  buildHeatmapDays,
+  computeSessionStats,
+  fetchUserSessionsSince,
+} from "@/lib/queries";
 
 type Deck = {
   id: string;
@@ -15,15 +21,6 @@ type Deck = {
 };
 
 type WordRow = { id: string; deck_id: string };
-
-function addUtcDays(iso: string, delta: number): string {
-  const d = new Date(`${iso}T12:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + delta);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 export default async function StatsPage() {
   const supabase = await createServerSupabaseClient();
@@ -100,26 +97,17 @@ export default async function StatsPage() {
   }
   const avgRating = ratingN > 0 ? ratingSum / ratingN : null;
 
-  const streakStart = addUtcDays(todayUtc, -400);
-  const { data: sessionRows } = await supabase
-    .from("sessions")
-    .select("date, cards_studied")
-    .eq("user_id", user.id)
-    .gte("date", streakStart)
-    .returns<{ date: string; cards_studied: number }[]>();
-
-  const sessions = sessionRows ?? [];
-  const streak = studyStreakDays(sessions, todayUtc);
-  const todayRow = sessions.find((s) => s.date === todayUtc);
-  const cardsStudiedToday = todayRow?.cards_studied ?? 0;
-
-  const sessionByDate = new Map(sessions.map((s) => [s.date, s.cards_studied]));
-  const heatDays: { date: string; active: boolean }[] = [];
-  for (let i = 29; i >= 0; i -= 1) {
-    const d = addUtcDays(todayUtc, -i);
-    const n = sessionByDate.get(d) ?? 0;
-    heatDays.push({ date: d, active: n > 0 });
-  }
+  const sessionStart = addUtcDays(todayUtc, -400);
+  const sessions = await fetchUserSessionsSince(
+    supabase,
+    user.id,
+    sessionStart,
+  );
+  const { cardsStudiedToday, streakDays: streak } = computeSessionStats(
+    sessions,
+    todayUtc,
+  );
+  const heatmapDays = buildHeatmapDays(sessions, todayUtc, 30);
 
   const deckStats = decks.map((deck) => {
     const wordIds = wordsByDeck.get(deck.id) ?? [];
@@ -185,24 +173,9 @@ export default async function StatsPage() {
           <h2 className="text-lg font-semibold text-zinc-100">
             Activiteit (30 dagen)
           </h2>
-          <div className="mt-3 flex flex-wrap gap-1">
-            {heatDays.map((d) => (
-              <div
-                key={d.date}
-                title={d.date}
-                className={`h-8 w-8 rounded-sm border text-[0.55rem] leading-8 text-center ${
-                  d.active
-                    ? "border-emerald-700 bg-emerald-600/90 text-emerald-950"
-                    : "border-zinc-800 bg-zinc-900 text-zinc-600"
-                }`}
-              >
-                {d.active ? "●" : ""}
-              </div>
-            ))}
+          <div className="mt-3">
+            <ActivityHeatmap days={heatmapDays} />
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
-            Groen = minstens één rating die dag (UTC).
-          </p>
         </section>
 
         <section className="mt-10">

@@ -148,3 +148,9 @@ function addDays(d: Date, delta: number): Date {
 export function utcTodayString(now: Date): string {
   return formatIsoDate(now);
 }
+
+/** Add calendar days to a UTC ISO date string (YYYY-MM-DD). */
+export function addUtcDays(iso: string, delta: number): string {
+  const d = addDays(parseIsoDateUtc(iso), delta);
+  return formatIsoDate(d);
+}
