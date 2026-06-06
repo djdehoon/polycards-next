@@ -12,6 +12,7 @@
     "compress:og-social": "node scripts/compress-og-social.mjs"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.4.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.1",
     "@vercel/analytics": "^2.0.1",

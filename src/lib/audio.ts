@@ -1,10 +1,17 @@
-export type SpeechLanguage = "uk-UA" | "nl-NL";
+export type SpeechLanguage =
+  | "uk-UA"
+  | "nl-NL"
+  | "es-ES"
+  | "en-US"
+  | "it-IT";
 
 export type SpeakOptions = {
   rate?: number;
   pitch?: number;
   volume?: number;
 };
+
+let currentAudio: HTMLAudioElement | null = null;
 
 function getSynth(): SpeechSynthesis | null {
   if (typeof window === "undefined") return null;
@@ -13,13 +20,19 @@ function getSynth(): SpeechSynthesis | null {
 }
 
 export function isSpeechSupported(): boolean {
-  return getSynth() !== null;
+  if (typeof window === "undefined") return false;
+  return true;
 }
 
 export function stopSpeech(): void {
   const synth = getSynth();
-  if (!synth) return;
-  synth.cancel();
+  if (synth) synth.cancel();
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
 }
 
 function loadVoices(synth: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
@@ -62,27 +75,20 @@ function pickVoice(
   return voices[0];
 }
 
-export function speakWord(
+function speakWithWebSpeech(
   text: string,
   language: SpeechLanguage,
-  options: SpeakOptions = {},
+  options: SpeakOptions,
 ): Promise<void> {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return Promise.reject(new Error("Cannot speak empty text"));
-  }
-
   const synth = getSynth();
   if (!synth) {
     return Promise.reject(new Error("Speech synthesis is not supported"));
   }
 
-  stopSpeech();
-
   return loadVoices(synth).then(
     (voices) =>
       new Promise<void>((resolve, reject) => {
-        const utterance = new SpeechSynthesisUtterance(trimmed);
+        const utterance = new SpeechSynthesisUtterance(text);
         const selectedVoice = pickVoice(voices, language);
         if (selectedVoice) {
           utterance.voice = selectedVoice;
@@ -106,4 +112,70 @@ export function speakWord(
         synth.speak(utterance);
       }),
   );
+}
+
+async function speakWithGoogleTts(
+  text: string,
+  language: SpeechLanguage,
+  options: SpeakOptions,
+): Promise<void> {
+  const response = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      text,
+      language,
+      rate: options.rate,
+      pitch: options.pitch,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`TTS API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as { audio?: string };
+  if (!data.audio) {
+    throw new Error("TTS API returned no audio");
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+    currentAudio = audio;
+    audio.volume = options.volume ?? 1;
+
+    audio.onended = () => {
+      if (currentAudio === audio) currentAudio = null;
+      resolve();
+    };
+    audio.onerror = () => {
+      if (currentAudio === audio) currentAudio = null;
+      reject(new Error("Failed to play audio"));
+    };
+
+    void audio.play().catch((err: unknown) => {
+      if (currentAudio === audio) currentAudio = null;
+      reject(err instanceof Error ? err : new Error("Failed to play audio"));
+    });
+  });
+}
+
+export async function speakWord(
+  text: string,
+  language: SpeechLanguage,
+  options: SpeakOptions = {},
+): Promise<void> {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error("Cannot speak empty text");
+  }
+
+  stopSpeech();
+
+  try {
+    await speakWithGoogleTts(trimmed, language, options);
+  } catch (error) {
+    console.warn("[audio] Google TTS unavailable, falling back to Web Speech:", error);
+    await speakWithWebSpeech(trimmed, language, options);
+  }
 }
