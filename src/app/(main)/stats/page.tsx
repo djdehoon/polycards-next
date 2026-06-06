@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgressRow } from "@/lib/srs";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { StatSummaryGrid } from "@/components/stats/StatSummaryGrid";
 import {
   deckWordStats,
   percentLearned,
@@ -125,51 +126,22 @@ export default async function StatsPage() {
   });
 
   return (
-    <div className="flex-1 px-4 py-8">
+    <div className="flex-1 px-4 py-4 sm:py-5">
       <main className="mx-auto max-w-4xl">
-        <h1 className="text-2xl font-semibold text-zinc-50">Stats</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="text-sm text-zinc-500">
           Overzicht op basis van je voortgang en study-sessies (UTC).
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 ring-1 ring-white/5">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Vandaag
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-50">
-              {cardsStudiedToday}
-            </p>
-            <p className="text-xs text-zinc-500">ratings vandaag</p>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 ring-1 ring-white/5">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Totaal geleerd
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-50">
-              {totalLearned}
-            </p>
-            <p className="text-xs text-zinc-500">woorden met reps &gt; 0</p>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 ring-1 ring-white/5">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Streak
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-50">
-              {streak} dagen
-            </p>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 ring-1 ring-white/5">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Gem. rating
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-50">
-              {avgRating != null ? avgRating.toFixed(2) : "—"}
-            </p>
-          </div>
+        <div className="mt-4">
+          <StatSummaryGrid
+            cardsStudiedToday={cardsStudiedToday}
+            totalLearned={totalLearned}
+            streak={streak}
+            avgRating={avgRating}
+          />
         </div>
 
-        <section className="mt-10">
+        <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 ring-1 ring-white/5 sm:p-5">
           <h2 className="text-lg font-semibold text-zinc-100">
             Activiteit (30 dagen)
           </h2>

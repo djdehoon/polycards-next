@@ -2,9 +2,17 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState, startTransition } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  startTransition,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { FlipCard } from "@/components/study/FlipCard";
+import { TypeStudyCard } from "@/components/study/TypeStudyCard";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
   type ProgressRow,
@@ -13,17 +21,20 @@ import {
   ratingFromScore,
   scheduleReview,
 } from "@/lib/srs";
+import {
+  normalizeStudyWord,
+  resolveDirection,
+  STUDY_WORD_SELECT,
+  type StudyDirectionMode,
+  type StudyMode,
+  type StudyWord,
+} from "@/lib/study-words";
 
-type WordRow = {
-  id: string;
-  term: string;
-  translation: string;
-  sort_order?: number;
-  deck_id: string;
-};
+const DIRECTION_KEY = "polycards:studyDirection";
+const STUDY_MODE_KEY = "polycards:studyMode";
 
 type DueItem = {
-  word: WordRow;
+  word: StudyWord;
   progress: ProgressRow | null;
 };
 
@@ -33,22 +44,30 @@ async function fetchWordsForDeck(
 ) {
   const primary = await supabase
     .from("words")
-    .select("*")
+    .select(STUDY_WORD_SELECT)
     .eq("deck_id", deckId)
     .order("sort_order", { ascending: true });
 
   if (!primary.error) {
-    return { data: (primary.data ?? []) as WordRow[], error: null };
+    return {
+      data: (primary.data ?? []).map((row) =>
+        normalizeStudyWord(row as Record<string, unknown>),
+      ),
+      error: null,
+    };
   }
 
   const fallback = await supabase
     .from("words")
     .select("*")
     .eq("deck_id", deckId)
+    .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
   return {
-    data: (fallback.data ?? []) as WordRow[],
+    data: (fallback.data ?? []).map((row) =>
+      normalizeStudyWord(row as Record<string, unknown>),
+    ),
     error: fallback.error,
   };
 }
@@ -134,6 +153,30 @@ async function loadDueItems(
   return { items, userId: user.id, error: null, unauthenticated: false };
 }
 
+function ModeButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition sm:px-3 sm:py-2 sm:text-sm ${
+        active
+          ? "border-blue-500 bg-blue-600/20 text-blue-300 ring-1 ring-blue-500/50"
+          : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function StudyLoading() {
   return (
     <div className="flex flex-1 items-center justify-center py-24 text-zinc-400">
@@ -154,6 +197,27 @@ function StudySession() {
   const [index, setIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [directionMode, setDirectionMode] =
+    useState<StudyDirectionMode>("ua-nl");
+  const [studyMode, setStudyMode] = useState<StudyMode>("flashcard");
+  const [prefsReady, setPrefsReady] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
+
+  useEffect(() => {
+    startTransition(() => {
+      const rawDir = localStorage.getItem(DIRECTION_KEY);
+      if (rawDir === "ua-nl" || rawDir === "nl-ua" || rawDir === "mix") {
+        setDirectionMode(rawDir);
+      }
+      const rawMode = localStorage.getItem(STUDY_MODE_KEY);
+      if (rawMode === "flashcard" || rawMode === "type") {
+        setStudyMode(rawMode);
+      }
+      setPrefsReady(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (!deckId) {
@@ -200,6 +264,19 @@ function StudySession() {
   }, [deckId]);
 
   const current = items[index];
+  const cardDirection = useMemo(
+    () =>
+      current
+        ? resolveDirection(directionMode, current.word.id)
+        : "ua-nl",
+    [current, directionMode],
+  );
+
+  useEffect(() => {
+    setIsFlipped(false);
+    setAnswerRevealed(false);
+  }, [current?.word.id, studyMode]);
+
   const done =
     !loading &&
     !loadError &&
@@ -210,6 +287,23 @@ function StudySession() {
 
   const canGoPrevious = index > 0;
   const canGoNext = index < items.length - 1;
+  const showRatings =
+    hasCards &&
+    ((studyMode === "flashcard" && isFlipped) ||
+      (studyMode === "type" && answerRevealed));
+
+  const progressPct =
+    items.length > 0 ? Math.round((index / items.length) * 100) : 0;
+
+  const persistDirection = useCallback((mode: StudyDirectionMode) => {
+    setDirectionMode(mode);
+    localStorage.setItem(DIRECTION_KEY, mode);
+  }, []);
+
+  const persistStudyMode = useCallback((mode: StudyMode) => {
+    setStudyMode(mode);
+    localStorage.setItem(STUDY_MODE_KEY, mode);
+  }, []);
 
   const goNext = useCallback(() => {
     setIndex((i) => i + 1);
@@ -262,7 +356,9 @@ function StudySession() {
   );
 
   const shell = (inner: ReactNode) => (
-    <div className="flex flex-1 flex-col px-4 py-8 text-zinc-100">{inner}</div>
+    <div className="flex flex-1 flex-col px-4 py-4 text-zinc-100 sm:py-6">
+      {inner}
+    </div>
   );
 
   if (!deckId) {
@@ -293,7 +389,7 @@ function StudySession() {
     );
   }
 
-  if (loading) {
+  if (loading || !prefsReady) {
     return <StudyLoading />;
   }
 
@@ -345,21 +441,87 @@ function StudySession() {
 
   return shell(
     <div className="mx-auto w-full max-w-lg flex-1">
-      <div className="mb-6 flex items-center justify-between text-sm text-zinc-500">
-        <span>
-          Kaart {index + 1} / {items.length}
+      <div className="mb-4 flex items-center justify-between gap-3 text-sm">
+        <span className="shrink-0 font-medium text-zinc-400">
+          Card {index + 1}/{items.length}
         </span>
-        <Link href="/dashboard" className="text-zinc-400 hover:text-zinc-200">
-          Dashboard
-        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500 ease-out"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+        <span className="shrink-0 tabular-nums text-zinc-500">{progressPct}%</span>
       </div>
 
-      <FlipCard
-        key={current!.word.id}
-        word={current!.word.term}
-        translation={current!.word.translation}
-        disabled={saving}
-      />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <ModeButton
+          active={directionMode === "ua-nl"}
+          onClick={() => persistDirection("ua-nl")}
+        >
+          UA→NL
+        </ModeButton>
+        <ModeButton
+          active={directionMode === "nl-ua"}
+          onClick={() => persistDirection("nl-ua")}
+        >
+          NL→UA
+        </ModeButton>
+        <ModeButton
+          active={directionMode === "mix"}
+          onClick={() => persistDirection("mix")}
+        >
+          Mix
+        </ModeButton>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <ModeButton
+          active={studyMode === "flashcard"}
+          onClick={() => persistStudyMode("flashcard")}
+        >
+          Flashcard
+        </ModeButton>
+        <ModeButton
+          active={studyMode === "type"}
+          onClick={() => persistStudyMode("type")}
+        >
+          Typ het woord
+        </ModeButton>
+      </div>
+
+      {studyMode === "flashcard" ? (
+        <>
+          <FlipCard
+            key={current!.word.id}
+            word={current!.word}
+            direction={cardDirection}
+            isFlipped={isFlipped}
+            onFlip={setIsFlipped}
+            disabled={saving}
+          />
+          {!isFlipped ? (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => setIsFlipped(true)}
+              className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
+            >
+              Toon Antwoord
+            </button>
+          ) : null}
+        </>
+      ) : (
+        <TypeStudyCard
+          key={current!.word.id}
+          word={current!.word}
+          direction={cardDirection}
+          disabled={saving}
+          onRevealed={() => setAnswerRevealed(true)}
+        />
+      )}
 
       {saveError ? (
         <p className="mt-4 text-center text-sm text-red-400" role="alert">
@@ -368,7 +530,7 @@ function StudySession() {
       ) : null}
 
       {hasCards ? (
-        <div className="mt-8 flex w-full flex-wrap items-stretch justify-center gap-2 sm:gap-3">
+        <div className="mt-4 flex w-full flex-wrap items-stretch justify-center gap-2 sm:mt-6 sm:gap-3">
           <button
             type="button"
             disabled={saving || !canGoPrevious}
@@ -385,50 +547,54 @@ function StudySession() {
             <span className="hidden sm:inline">← Previous</span>
           </button>
 
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(1);
-            }}
-            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-          >
-            ❌ Again
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(2);
-            }}
-            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-          >
-            😓 Hard
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(3);
-            }}
-            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-          >
-            👍 Good
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={(e) => {
-              e.stopPropagation();
-              void onRate(4);
-            }}
-            className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
-          >
-            🎉 Easy
-          </button>
+          {showRatings ? (
+            <>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(1);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                ❌ Again
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(2);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                😓 Hard
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(3);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                👍 Good
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onRate(4);
+                }}
+                className="min-w-[4.5rem] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50 sm:flex-none"
+              >
+                🎉 Easy
+              </button>
+            </>
+          ) : null}
 
           <button
             type="button"

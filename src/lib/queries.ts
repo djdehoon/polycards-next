@@ -71,3 +71,11 @@ export function buildHeatmapDays(
 
   return days;
 }
+
+export { STUDY_WORD_SELECT, normalizeStudyWord } from "@/lib/study-words";
+export type {
+  StudyWord,
+  StudyDirection,
+  StudyDirectionMode,
+  StudyMode,
+} from "@/lib/study-words";

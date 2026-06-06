@@ -7,66 +7,55 @@ import {
   stopSpeech,
   type SpeechLanguage,
 } from "@/lib/audio";
+import type { StudyDirection, StudyWord } from "@/lib/study-words";
+import {
+  StudyCategoryBadge,
+  StudyWordBody,
+} from "@/components/study/StudyCardFace";
 
 export type FlipCardProps = {
-  word: string;
-  translation: string;
+  word: StudyWord;
+  direction: StudyDirection;
+  isFlipped?: boolean;
+  onFlip?: (flipped: boolean) => void;
   disabled?: boolean;
 };
 
-type SpeakingSide = "uk" | "nl";
+type SpeakingSide = "front" | "back";
 
 const faceBase =
-  "absolute inset-0 flex-col items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-800 px-6 shadow-xl";
+  "absolute inset-0 flex-col items-center justify-center overflow-y-auto rounded-2xl border border-zinc-700 bg-zinc-800 px-5 py-6 shadow-xl";
 
-const speakerBase =
-  "absolute right-3 top-3 z-10 rounded-lg px-2.5 py-1.5 text-xs font-medium text-white transition disabled:cursor-not-allowed disabled:bg-zinc-600 disabled:opacity-60";
+function faceContent(
+  word: StudyWord,
+  direction: StudyDirection,
+  side: "front" | "back",
+) {
+  const isUkFront = direction === "ua-nl";
+  const showUk = side === "front" ? isUkFront : !isUkFront;
+  const mainText = showUk ? word.term : word.translation;
+  const langLabel = showUk ? "Oekraïens" : "Nederlands";
+  const speechLang: SpeechLanguage = showUk ? "uk-UA" : "nl-NL";
 
-function SpeakerButton({
-  isSpeaking,
-  speakingSide,
-  disabled,
-  speechAvailable,
-  className,
-  ariaLabel,
-  onSpeak,
-}: {
-  isSpeaking: SpeakingSide | null;
-  speakingSide: SpeakingSide;
-  disabled: boolean;
-  speechAvailable: boolean;
-  className: string;
-  ariaLabel: string;
-  onSpeak: (e: React.MouseEvent<HTMLButtonElement>) => void;
-}) {
-  const playing = isSpeaking === speakingSide;
-  const speakerDisabled =
-    disabled || isSpeaking !== null || !speechAvailable;
-
-  return (
-    <button
-      type="button"
-      disabled={speakerDisabled}
-      onClick={onSpeak}
-      className={`${speakerBase} ${className}`}
-      aria-label={ariaLabel}
-      title={
-        speechAvailable
-          ? ariaLabel
-          : "Spraak wordt niet ondersteund in deze browser"
-      }
-    >
-      {playing ? "Playing..." : "🔊"}
-    </button>
-  );
+  return {
+    mainText,
+    langLabel,
+    speechLang,
+    showTranslit: showUk,
+  };
 }
 
 export function FlipCard({
   word,
-  translation,
+  direction,
+  isFlipped: isFlippedProp,
+  onFlip,
   disabled = false,
 }: FlipCardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [internalFlipped, setInternalFlipped] = useState(false);
+  const isControlled = isFlippedProp !== undefined;
+  const isFlipped = isControlled ? isFlippedProp : internalFlipped;
+
   const [isSpeaking, setIsSpeaking] = useState<SpeakingSide | null>(null);
   const [speechAvailable, setSpeechAvailable] = useState(false);
 
@@ -75,28 +64,40 @@ export function FlipCard({
   }, []);
 
   useEffect(() => {
-    setIsFlipped(false);
+    if (!isControlled) {
+      setInternalFlipped(false);
+    }
     setIsSpeaking(null);
     stopSpeech();
     return () => {
       stopSpeech();
     };
-  }, [word]);
+  }, [word.id, isControlled]);
+
+  const setFlipped = useCallback(
+    (next: boolean) => {
+      if (!isControlled) {
+        setInternalFlipped(next);
+      }
+      onFlip?.(next);
+    },
+    [isControlled, onFlip],
+  );
 
   const handleFlip = useCallback(() => {
     if (disabled) return;
-    setIsFlipped((prev) => !prev);
-  }, [disabled]);
+    setFlipped(!isFlipped);
+  }, [disabled, isFlipped, setFlipped]);
 
   const handleFlipKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (disabled) return;
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        setIsFlipped((prev) => !prev);
+        setFlipped(!isFlipped);
       }
     },
-    [disabled],
+    [disabled, isFlipped, setFlipped],
   );
 
   const handleSpeak = useCallback(
@@ -121,6 +122,60 @@ export function FlipCard({
     [disabled, isSpeaking, speechAvailable],
   );
 
+  const front = faceContent(word, direction, "front");
+  const back = faceContent(word, direction, "back");
+
+  function renderFace(
+    side: "front" | "back",
+    content: ReturnType<typeof faceContent>,
+    hidden: boolean,
+  ) {
+    const rotate = side === "back" ? "[transform:rotateY(180deg)]" : "";
+    const speakingSide: SpeakingSide = side;
+
+    return (
+      <div
+        className={`card-${side} ${faceBase} relative ${rotate} ${
+          hidden ? "hidden" : "flex"
+        }`}
+      >
+        <StudyCategoryBadge category={word.category} />
+        <button
+          type="button"
+          disabled={disabled || isSpeaking !== null || !speechAvailable}
+          onClick={(e) =>
+            void handleSpeak(
+              e,
+              content.mainText,
+              content.speechLang,
+              speakingSide,
+            )
+          }
+          className="absolute right-3 top-3 z-10 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-600 disabled:opacity-60"
+          aria-label="Uitspraak"
+          title={
+            speechAvailable
+              ? "Uitspraak"
+              : "Spraak wordt niet ondersteund in deze browser"
+          }
+        >
+          {isSpeaking === speakingSide ? "…" : "🔊 Uitspraak"}
+        </button>
+
+        <StudyWordBody
+          word={word}
+          langLabel={content.langLabel}
+          mainText={content.mainText}
+          showTranslit={content.showTranslit}
+        />
+
+        {side === "front" && !isFlipped ? (
+          <p className="mt-4 text-xs text-zinc-500">👆 Tik om te omdraaien</p>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="[perspective:1200px]">
       <div
@@ -130,63 +185,19 @@ export function FlipCard({
         onKeyDown={handleFlipKeyDown}
         aria-disabled={disabled}
         aria-label={isFlipped ? "Toon voorkant" : "Toon achterkant"}
-        className={`relative h-56 w-full cursor-pointer rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 ${
+        className={`relative min-h-64 w-full cursor-pointer rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
           disabled ? "cursor-not-allowed opacity-50" : ""
         }`}
       >
         <div
-          className={`card-inner relative h-full w-full transition-transform duration-[600ms] [transform-style:preserve-3d] ${
+          className={`card-inner relative h-full min-h-64 w-full transition-transform duration-[600ms] [transform-style:preserve-3d] ${
             isFlipped
               ? "[transform:rotateY(180deg)]"
               : "[transform:rotateY(0deg)]"
           }`}
         >
-          <div
-            className={`card-front ${faceBase} relative ${
-              isFlipped ? "hidden" : "flex"
-            }`}
-          >
-            <SpeakerButton
-              isSpeaking={isSpeaking}
-              speakingSide="uk"
-              disabled={disabled}
-              speechAvailable={speechAvailable}
-              className="bg-blue-600 hover:bg-blue-500"
-              ariaLabel="Uitspraak Oekraïens"
-              onSpeak={(e) => void handleSpeak(e, word, "uk-UA", "uk")}
-            />
-            <span className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Oekraïens
-            </span>
-            <p className="text-center text-2xl font-semibold text-zinc-50">
-              {word}
-            </p>
-            <span className="mt-4 text-xs text-zinc-500">Klik om te draaien</span>
-          </div>
-          <div
-            className={`card-back ${faceBase} relative [transform:rotateY(180deg)] ${
-              isFlipped ? "flex" : "hidden"
-            }`}
-          >
-            <SpeakerButton
-              isSpeaking={isSpeaking}
-              speakingSide="nl"
-              disabled={disabled}
-              speechAvailable={speechAvailable}
-              className="bg-emerald-600 hover:bg-emerald-500"
-              ariaLabel="Uitspraak Nederlands"
-              onSpeak={(e) =>
-                void handleSpeak(e, translation, "nl-NL", "nl")
-              }
-            />
-            <span className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Nederlands
-            </span>
-            <p className="text-center text-2xl font-semibold text-zinc-50">
-              {translation}
-            </p>
-            <span className="mt-4 text-xs text-zinc-500">Klik om te draaien</span>
-          </div>
+          {renderFace("front", front, isFlipped)}
+          {renderFace("back", back, !isFlipped)}
         </div>
       </div>
     </div>

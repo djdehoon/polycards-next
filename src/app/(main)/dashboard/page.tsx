@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyGoalPanel } from "@/components/DailyGoalPanel";
+import { StatSummaryGrid } from "@/components/stats/StatSummaryGrid";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgressRow } from "@/lib/srs";
 import {
@@ -141,49 +142,14 @@ export default async function DashboardPage({
         ) : null}
 
         {!error && decks.length > 0 ? (
-          <div className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 ring-1 ring-white/5 sm:p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Vandaag geoefend
-              </p>
-              <p className="mt-0.5 text-lg font-semibold text-zinc-50 sm:text-xl">
-                {cardsStudiedToday}
-              </p>
-            </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 ring-1 ring-white/5 sm:p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Totaal geleerd
-              </p>
-              <p className="mt-0.5 text-lg font-semibold text-zinc-50 sm:text-xl">
-                {totalLearned}
-                {totalWordsAllDecks > 0 ? (
-                  <span className="text-sm font-normal text-zinc-500">
-                    {" "}
-                    / {totalWordsAllDecks} woorden
-                  </span>
-                ) : null}
-              </p>
-            </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 ring-1 ring-white/5 sm:p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Streak
-              </p>
-              <p className="mt-0.5 text-lg font-semibold text-zinc-50 sm:text-xl">
-                {streak} dagen
-              </p>
-            </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 ring-1 ring-white/5 sm:p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Gem. rating
-              </p>
-              <p className="mt-0.5 text-lg font-semibold text-zinc-50 sm:text-xl">
-                {avgRating != null ? avgRating.toFixed(2) : "—"}
-              </p>
-              <p className="mt-0.5 line-clamp-2 text-[10px] text-zinc-500 sm:text-[11px]">
-                Laatste knop (1–4), gemiddeld over kaarten
-              </p>
-            </div>
-          </div>
+          <StatSummaryGrid
+            compact
+            cardsStudiedToday={cardsStudiedToday}
+            totalLearned={totalLearned}
+            totalWords={totalWordsAllDecks > 0 ? totalWordsAllDecks : undefined}
+            streak={streak}
+            avgRating={avgRating}
+          />
         ) : null}
 
         {!error && decks.length > 0 ? (
