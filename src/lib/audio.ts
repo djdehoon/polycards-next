@@ -3,7 +3,8 @@ export type SpeechLanguage =
   | "nl-NL"
   | "es-ES"
   | "en-US"
-  | "it-IT";
+  | "it-IT"
+  | "zh-CN";
 
 export type SpeakOptions = {
   rate?: number;

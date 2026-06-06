@@ -8,6 +8,7 @@ export const TTS_LANGUAGE_CODES = [
   "es-ES",
   "en-US",
   "it-IT",
+  "zh-CN",
 ] as const;
 
 export type TtsLanguageCode = (typeof TTS_LANGUAGE_CODES)[number];
@@ -17,12 +18,16 @@ export type TtsSynthesizeOptions = {
   pitch?: number;
 };
 
-const VOICE_MAP: Record<TtsLanguageCode, string> = {
-  "uk-UA": "uk-UA-Wavenet-A",
-  "nl-NL": "nl-NL-Neural2-A",
-  "es-ES": "es-ES-Neural2-A",
-  "en-US": "en-US-Neural2-A",
-  "it-IT": "it-IT-Neural2-A",
+const VOICE_MAP: Record<
+  TtsLanguageCode,
+  { languageCode: string; name: string }
+> = {
+  "uk-UA": { languageCode: "uk-UA", name: "uk-UA-Wavenet-A" },
+  "nl-NL": { languageCode: "nl-NL", name: "nl-NL-Neural2-A" },
+  "es-ES": { languageCode: "es-ES", name: "es-ES-Neural2-A" },
+  "en-US": { languageCode: "en-US", name: "en-US-Neural2-A" },
+  "it-IT": { languageCode: "it-IT", name: "it-IT-Neural2-A" },
+  "zh-CN": { languageCode: "cmn-CN", name: "cmn-CN-Wavenet-A" },
 };
 
 let client: TextToSpeechClient | null = null;
@@ -71,13 +76,13 @@ export async function synthesizeSpeech(
   options: TtsSynthesizeOptions = {},
 ): Promise<Buffer> {
   const ttsClient = getClient();
-  const voiceName = VOICE_MAP[languageCode];
+  const voice = VOICE_MAP[languageCode];
 
   const [response] = await ttsClient.synthesizeSpeech({
     input: { text },
     voice: {
-      languageCode,
-      name: voiceName,
+      languageCode: voice.languageCode,
+      name: voice.name,
     },
     audioConfig: {
       audioEncoding: "MP3",

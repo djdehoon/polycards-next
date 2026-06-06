@@ -705,6 +705,64 @@
   let currentCardIndex = 0;
   let isFlipped = false;
   let deckStats = {};
+  let currentAudio = null;
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+    }
+  }
+
+  function speakWithWebSpeech(text, lang) {
+    return new Promise((resolve, reject) => {
+      if (!('speechSynthesis' in window)) {
+        reject(new Error('Speech synthesis is not supported'));
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.onend = () => resolve();
+      utterance.onerror = () => reject(new Error('Speech synthesis failed'));
+      speechSynthesis.speak(utterance);
+    });
+  }
+
+  async function speakWithGoogleTts(text, lang) {
+    const response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ text, language: lang }),
+    });
+    if (!response.ok) {
+      throw new Error('TTS API error: ' + response.status);
+    }
+    const data = await response.json();
+    if (!data.audio) {
+      throw new Error('TTS API returned no audio');
+    }
+    return new Promise((resolve, reject) => {
+      const audio = new Audio('data:audio/mp3;base64,' + data.audio);
+      currentAudio = audio;
+      audio.onended = () => {
+        if (currentAudio === audio) currentAudio = null;
+        resolve();
+      };
+      audio.onerror = () => {
+        if (currentAudio === audio) currentAudio = null;
+        reject(new Error('Failed to play audio'));
+      };
+      audio.play().catch((err) => {
+        if (currentAudio === audio) currentAudio = null;
+        reject(err);
+      });
+    });
+  }
 
   // ════════════════════════════════════════
   // FUNCTIONS
@@ -770,6 +828,7 @@
     document.getElementById('show-ans-btn').style.display = 'block';
     document.getElementById('rating-buttons').style.display = 'none';
     isFlipped = false;
+    stopSpeech();
   }
 
   function flipCard() {
@@ -787,16 +846,26 @@
     updateStats();
   }
 
-  function speakWord(e) {
+  async function speakWord(e) {
     e.stopPropagation();
     const deckWords = words.filter(w => w.category === currentDeck);
     const card = deckWords[currentCardIndex];
     const text = isFlipped ? card.en : card.zh;
-    const lang = isFlipped ? 'en-US' : 'zh-CN';
+    const googleLang = isFlipped ? 'en-US' : 'zh-CN';
+    const webLang = isFlipped ? 'en-US' : 'zh-CN';
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang;
-    speechSynthesis.speak(utterance);
+    stopSpeech();
+
+    try {
+      await speakWithGoogleTts(text, googleLang);
+    } catch (err) {
+      console.warn('[audio] Google TTS unavailable, using Web Speech:', err);
+      try {
+        await speakWithWebSpeech(text, webLang);
+      } catch (fallbackErr) {
+        console.error('[audio] speak failed:', fallbackErr);
+      }
+    }
   }
 
   function updateStats() {
