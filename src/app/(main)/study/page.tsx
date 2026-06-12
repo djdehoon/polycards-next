@@ -496,7 +496,13 @@ function StudySession() {
         <>
           <FlipCard
             key={current!.word.id}
-            word={current!.word}
+            word={current!.word.translation}
+            translation={current!.word.term}
+            phonetic={current!.word.translit ?? ""}
+            example_word={current!.word.example_nl ?? ""}
+            example_translation={current!.word.example_uk ?? ""}
+            category={current!.word.category ?? ""}
+            emoji={current!.word.emoji ?? "📝"}
             direction={cardDirection}
             isFlipped={isFlipped}
             onFlip={setIsFlipped}

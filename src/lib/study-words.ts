@@ -16,16 +16,25 @@ export type StudyDirectionMode = StudyDirection | "mix";
 export type StudyMode = "flashcard" | "type";
 
 export const STUDY_WORD_SELECT =
-  "id, deck_id, sort_order, term, translation, word_uk, word_nl, translit, phonetic, example_uk, example_nl, category, emoji";
+  "id, deck_id, sort_order, term, translation, word_uk, word_nl, translit, phonetic, example_uk, example_nl, example_word, example_translation, category, emoji";
 
 function optionalString(value: unknown): string | null {
   if (value == null || value === "") return null;
   return String(value);
 }
 
+function coalesceString(...values: unknown[]): string {
+  for (const value of values) {
+    if (value == null) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
 export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
-  const term = String(row.word_uk ?? row.term ?? "");
-  const translation = String(row.word_nl ?? row.translation ?? "");
+  const term = coalesceString(row.word_uk, row.term);
+  const translation = coalesceString(row.word_nl, row.translation);
 
   return {
     id: String(row.id),
@@ -35,8 +44,8 @@ export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
     sort_order:
       typeof row.sort_order === "number" ? row.sort_order : undefined,
     translit: optionalString(row.translit ?? row.phonetic),
-    example_uk: optionalString(row.example_uk),
-    example_nl: optionalString(row.example_nl),
+    example_uk: optionalString(row.example_uk ?? row.example_word),
+    example_nl: optionalString(row.example_nl ?? row.example_translation),
     category: optionalString(row.category),
     emoji: optionalString(row.emoji),
   };
