@@ -1,12 +1,13 @@
+/** Study card fields mirror Supabase `words` columns: `word` = Dutch, `translation` = Ukrainian. */
 export type StudyWord = {
   id: string;
   deck_id: string;
-  term: string;
+  word: string;
   translation: string;
   sort_order?: number;
-  translit?: string | null;
-  example_uk?: string | null;
-  example_nl?: string | null;
+  phonetic?: string | null;
+  example_word?: string | null;
+  example_translation?: string | null;
   category?: string | null;
   emoji?: string | null;
   deckTitle?: string | null;
@@ -17,7 +18,7 @@ export type StudyDirectionMode = StudyDirection | "mix";
 export type StudyMode = "flashcard" | "type";
 
 export const STUDY_WORD_SELECT =
-  "id, deck_id, sort_order, term, translation, translit, phonetic, example_uk, example_nl, example_term, example_word, example_translation, category, emoji";
+  "id, deck_id, sort_order, word, translation, phonetic, example_word, example_translation, category, emoji";
 
 function optionalString(value: unknown): string | null {
   if (value == null || value === "") return null;
@@ -47,75 +48,75 @@ function hasCyrillic(text: string): boolean {
   return CYRILLIC_PATTERN.test(text);
 }
 
-function fixNlUkWordPair(term: string, translation: string): [string, string] {
-  if (
-    term &&
-    translation &&
-    !hasCyrillic(term) &&
-    hasCyrillic(translation)
-  ) {
-    return [translation, term];
+/** Returns [dutch, ukrainian] for StudyWord.word / StudyWord.translation */
+function fixNlUkWordPair(dutch: string, ukrainian: string): [string, string] {
+  if (dutch && ukrainian && hasCyrillic(dutch) && !hasCyrillic(ukrainian)) {
+    return [ukrainian, dutch];
   }
-  if (!term && translation && hasCyrillic(translation)) {
-    return [translation, ""];
+  if (!dutch && ukrainian && hasCyrillic(ukrainian)) {
+    return ["", ukrainian];
   }
-  if (term && !translation && !hasCyrillic(term)) {
-    return ["", term];
+  if (dutch && !ukrainian && !hasCyrillic(dutch)) {
+    return [dutch, ""];
   }
-  return [term, translation];
+  if (dutch && !ukrainian && hasCyrillic(dutch)) {
+    return ["", dutch];
+  }
+  return [dutch, ukrainian];
 }
 
+/** Returns [ukrainian, dutch] for StudyWord.example_translation / example_word */
 function fixNlUkExamplePair(
-  exampleUk: string,
-  exampleNl: string,
+  ukrainian: string,
+  dutch: string,
 ): [string, string] {
   if (
-    exampleUk &&
-    exampleNl &&
-    !hasCyrillic(exampleUk) &&
-    hasCyrillic(exampleNl)
+    ukrainian &&
+    dutch &&
+    !hasCyrillic(ukrainian) &&
+    hasCyrillic(dutch)
   ) {
-    return [exampleNl, exampleUk];
+    return [dutch, ukrainian];
   }
-  if (exampleUk && !hasCyrillic(exampleUk)) {
-    return ["", exampleNl || exampleUk];
+  if (ukrainian && !hasCyrillic(ukrainian)) {
+    return ["", dutch || ukrainian];
   }
-  return [exampleUk, exampleNl];
+  return [ukrainian, dutch];
 }
 
 export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
-  const [term, translation] = fixNlUkWordPair(
-    coalesceString(row.term, row.word_uk),
-    coalesceString(row.translation, row.word_nl),
+  const [word, translation] = fixNlUkWordPair(
+    coalesceString(row.word, row.term),
+    coalesceString(row.translation),
   );
 
-  const [exampleUk, exampleNl] = fixNlUkExamplePair(
-    coalesceString(row.example_term, row.example_uk, row.example_word),
-    coalesceString(row.example_translation, row.example_nl),
+  const [example_translation, example_word] = fixNlUkExamplePair(
+    coalesceString(row.example_translation, row.example_uk, row.example_term),
+    coalesceString(row.example_word, row.example_nl),
   );
 
   return {
     id: String(row.id),
     deck_id: String(row.deck_id),
-    term,
+    word,
     translation,
     sort_order:
       typeof row.sort_order === "number" ? row.sort_order : undefined,
-    translit: optionalString(row.translit ?? row.phonetic),
-    example_uk: optionalString(exampleUk),
-    example_nl: optionalString(exampleNl),
+    phonetic: optionalString(row.phonetic ?? row.translit),
+    example_word: optionalString(example_word),
+    example_translation: optionalString(example_translation),
     category: optionalString(row.category),
     emoji: optionalString(row.emoji),
     deckTitle: extractDeckTitle(row) ?? optionalString(row.category),
   };
 }
 
-export function getTranslit(word: StudyWord): string | null {
-  return word.translit ?? null;
+export function getPhonetic(studyWord: StudyWord): string | null {
+  return studyWord.phonetic ?? null;
 }
 
-export function getStudyExamples(word: StudyWord): string[] {
-  return [word.example_uk, word.example_nl].filter(
+export function getStudyExamples(studyWord: StudyWord): string[] {
+  return [studyWord.example_translation, studyWord.example_word].filter(
     (ex): ex is string => Boolean(ex),
   );
 }

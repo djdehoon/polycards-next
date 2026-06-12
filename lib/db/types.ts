@@ -43,8 +43,8 @@ export interface LanguagePair {
     id: string;
     deck_id: string;
     language_pair_id: string;  // ← NEW!
-    term: string;              // Database column (source language)
-    translation: string;       // Database column (target language)
+    word: string;              // Dutch
+    translation: string;       // Ukrainian
     category: string | null;   // ← NEW!
     phonetic: string | null;   // ← NEW!
     example_word: string | null;        // ← NEW! (changed from example_term)
@@ -58,14 +58,14 @@ export interface LanguagePair {
   export interface Word {
     id: string;
     deck_id: string;
-    language_pair_id: string;  // ← NEW!
-    word_uk: string;           // Maps from 'term'
-    word_nl: string;           // Maps from 'translation'
-    category: string;          // ← NEW!
-    phonetic: string;          // ← NEW!
-    example_uk: string;        // Maps from 'example_word'
-    example_nl: string;        // Maps from 'example_translation'
-    emoji: string;             // ← NEW!
+    language_pair_id: string;
+    word: string;
+    translation: string;
+    category: string;
+    phonetic: string;
+    example_word: string;
+    example_translation: string;
+    emoji: string;
     sort_order: number;
     created_at: string;
     updated_at: string;
@@ -77,12 +77,12 @@ export interface LanguagePair {
       id: row.id,
       deck_id: row.deck_id,
       language_pair_id: row.language_pair_id,
-      word_uk: row.term,                      // Map from database 'term'
-      word_nl: row.translation,               // Map from database 'translation'
+      word: row.word,
+      translation: row.translation,
       category: row.category || '',
       phonetic: row.phonetic || '',
-      example_uk: row.example_word || '',     // Map from database 'example_word'
-      example_nl: row.example_translation || '',
+      example_word: row.example_word || '',
+      example_translation: row.example_translation || '',
       emoji: row.emoji || '📝',
       sort_order: row.sort_order,
       created_at: row.created_at,

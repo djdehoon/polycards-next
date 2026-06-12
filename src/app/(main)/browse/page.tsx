@@ -14,7 +14,7 @@ type Deck = {
 type WordRow = {
   id: string;
   deck_id: string;
-  term: string;
+  word: string;
   translation: string;
   sort_order: number;
 };
@@ -78,7 +78,7 @@ export default async function BrowsePage({
 
   const { data: words, error: wErr } = await supabase
     .from("words")
-    .select("id, deck_id, term, translation, sort_order")
+    .select("id, deck_id, word, translation, sort_order")
     .eq("deck_id", deckId)
     .order("sort_order", { ascending: true })
     .returns<WordRow[]>();
@@ -119,7 +119,7 @@ export default async function BrowsePage({
       if (statusFilter !== "all" && status !== statusFilter) return false;
       if (!qRaw) return true;
       return (
-        word.term.toLowerCase().includes(qRaw) ||
+        word.word.toLowerCase().includes(qRaw) ||
         word.translation.toLowerCase().includes(qRaw)
       );
     });
@@ -166,7 +166,7 @@ export default async function BrowsePage({
                 rows.map(({ word, status, progress }) => (
                   <tr key={word.id} className="hover:bg-zinc-900/80">
                     <td className="px-4 py-3 font-medium text-zinc-100">
-                      {word.term}
+                      {word.word}
                     </td>
                     <td className="px-4 py-3 text-zinc-300">
                       {word.translation}

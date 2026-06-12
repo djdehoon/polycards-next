@@ -34,7 +34,7 @@ const DIRECTION_KEY = "polycards:studyDirection";
 const STUDY_MODE_KEY = "polycards:studyMode";
 
 type DueItem = {
-  word: StudyWord;
+  studyWord: StudyWord;
   progress: ProgressRow | null;
 };
 
@@ -152,7 +152,7 @@ async function loadDueItems(
   });
 
   const items: DueItem[] = dueWords.map((w) => ({
-    word: w,
+    studyWord: w,
     progress: byWord.get(w.id) ?? null,
   }));
 
@@ -273,7 +273,7 @@ function StudySession() {
   const cardDirection = useMemo(
     () =>
       current
-        ? resolveDirection(directionMode, current.word.id)
+        ? resolveDirection(directionMode, current.studyWord.id)
         : "ua-nl",
     [current, directionMode],
   );
@@ -281,7 +281,7 @@ function StudySession() {
   useEffect(() => {
     setIsFlipped(false);
     setAnswerRevealed(false);
-  }, [current?.word.id, studyMode, cardDirection]);
+  }, [current?.studyWord.id, studyMode, cardDirection]);
 
   const done =
     !loading &&
@@ -337,7 +337,7 @@ function StudySession() {
       const { card: nextCard } = scheduleReview(card, grade, now);
       const payload = cardToProgressPayload(
         userId,
-        current.word.id,
+        current.studyWord.id,
         nextCard,
         now,
         score,
@@ -501,8 +501,8 @@ function StudySession() {
       {studyMode === "flashcard" ? (
         <>
           <FlipCard
-            key={`${current!.word.id}-${cardDirection}`}
-            studyWord={current!.word}
+            key={`${current!.studyWord.id}-${cardDirection}`}
+            studyWord={current!.studyWord}
             direction={cardDirection}
             isFlipped={isFlipped}
             onFlip={setIsFlipped}
@@ -521,8 +521,8 @@ function StudySession() {
         </>
       ) : (
         <TypeStudyCard
-          key={`${current!.word.id}-${cardDirection}`}
-          word={current!.word}
+          key={`${current!.studyWord.id}-${cardDirection}`}
+          studyWord={current!.studyWord}
           direction={cardDirection}
           disabled={saving}
           onRevealed={() => setAnswerRevealed(true)}

@@ -1,6 +1,6 @@
 import {
   getStudyExamples,
-  getTranslit,
+  getPhonetic,
   type StudyWord,
 } from "@/lib/study-words";
 
@@ -23,39 +23,43 @@ export function StudyCategoryBadge({
 }
 
 export function StudyWordBody({
-  word,
+  studyWord,
   langLabel,
   mainText,
-  showTranslit,
+  showPhonetic,
 }: {
-  word: StudyWord;
+  studyWord: StudyWord;
   langLabel: string;
   mainText: string;
-  showTranslit: boolean;
+  showPhonetic: boolean;
 }) {
-  const translit = getTranslit(word);
+  const phonetic = getPhonetic(studyWord);
 
   return (
     <>
       <span className="mb-1 mt-4 text-xs font-medium uppercase tracking-wide text-zinc-500">
         {langLabel}
       </span>
-      {word.emoji ? (
+      {studyWord.emoji ? (
         <span className="mb-1 text-2xl" aria-hidden>
-          {word.emoji}
+          {studyWord.emoji}
         </span>
       ) : null}
       <p className="text-center text-2xl font-semibold text-zinc-50">{mainText}</p>
-      {showTranslit && translit ? (
-        <p className="mt-1 text-sm italic text-zinc-400">{translit}</p>
+      {showPhonetic && phonetic ? (
+        <p className="mt-1 text-sm italic text-zinc-400">{phonetic}</p>
       ) : null}
-      <StudyWordExamples word={word} />
+      <StudyWordExamples studyWord={studyWord} />
     </>
   );
 }
 
-export function StudyWordExamples({ word }: { word: StudyWord }) {
-  const examples = getStudyExamples(word);
+export function StudyWordExamples({
+  studyWord,
+}: {
+  studyWord: StudyWord;
+}) {
+  const examples = getStudyExamples(studyWord);
   if (examples.length === 0) return null;
 
   return (

@@ -27,6 +27,7 @@ type FaceContent = {
   speechText: string;
   lang: SpeechLanguage;
   showPhonetic: boolean;
+  emoji?: string;
 };
 
 const faceBase =
@@ -115,40 +116,41 @@ function ExampleBar({ children }: { children: ReactNode }) {
 function buildFaceContent(
   direction: StudyDirection,
   side: "front" | "back",
-  wordUk: string,
-  wordNl: string,
-  exampleUk: string,
-  exampleNl: string,
+  word: string,
+  translation: string,
+  example_word: string,
+  example_translation: string,
+  emoji?: string,
 ): FaceContent {
   const isUaNl = direction === "ua-nl";
 
   if (side === "front") {
     if (isUaNl) {
       const exampleSentence =
-        swapWordInSentence(exampleNl, wordNl, wordUk) ||
-        exampleUk ||
-        exampleNl;
+        swapWordInSentence(example_word, word, translation) ||
+        example_translation ||
+        example_word;
       return {
-        mainWord: wordUk,
-        secondaryWord: wordNl,
+        mainWord: translation,
+        secondaryWord: word,
         exampleSentence,
-        boldTarget: wordUk,
-        speechText: exampleUk || wordUk,
+        boldTarget: translation,
+        speechText: example_translation || translation,
         lang: "uk-UA",
         showPhonetic: true,
       };
     }
 
     const exampleSentence =
-      swapWordInSentence(exampleUk, wordUk, wordNl) ||
-      exampleNl ||
-      exampleUk;
+      swapWordInSentence(example_translation, translation, word) ||
+      example_word ||
+      example_translation;
     return {
-      mainWord: wordNl,
-      secondaryWord: wordUk,
+      mainWord: word,
+      secondaryWord: translation,
       exampleSentence,
-      boldTarget: wordNl,
-      speechText: exampleNl || wordNl,
+      boldTarget: word,
+      speechText: example_word || word,
       lang: "nl-NL",
       showPhonetic: false,
     };
@@ -156,24 +158,26 @@ function buildFaceContent(
 
   if (isUaNl) {
     return {
-      mainWord: wordNl,
+      mainWord: word,
       secondaryWord: "",
-      exampleSentence: exampleNl,
-      boldTarget: wordNl,
-      speechText: exampleNl || wordNl,
+      exampleSentence: example_word,
+      boldTarget: word,
+      speechText: example_word || word,
       lang: "nl-NL",
       showPhonetic: false,
+      emoji,
     };
   }
 
   return {
-    mainWord: wordUk,
+    mainWord: translation,
     secondaryWord: "",
-    exampleSentence: exampleUk,
-    boldTarget: wordUk,
-    speechText: exampleUk || wordUk,
+    exampleSentence: example_translation,
+    boldTarget: translation,
+    speechText: example_translation || translation,
     lang: "uk-UA",
     showPhonetic: true,
+    emoji,
   };
 }
 
@@ -191,35 +195,34 @@ export function FlipCard({
   const [isSpeaking, setIsSpeaking] = useState<SpeakingSide | null>(null);
   const [speechAvailable, setSpeechAvailable] = useState(false);
 
-  const wordUk = studyWord.term;
-  const wordNl = studyWord.translation;
-  const exampleUk = studyWord.example_uk ?? "";
-  const exampleNl = studyWord.example_nl ?? "";
-  const phonetic = studyWord.translit ?? "";
+  const word = studyWord.word;
+  const translation = studyWord.translation;
+  const example_word = studyWord.example_word ?? "";
+  const example_translation = studyWord.example_translation ?? "";
+  const phonetic = studyWord.phonetic ?? "";
   const category = studyWord.category ?? "";
   const deckTitle = studyWord.deckTitle ?? category;
-  const emoji = studyWord.emoji ?? "📝";
-
   const isUaNl = direction === "ua-nl";
   const formattedPhonetic = formatPhonetic(phonetic);
-  const displayEmoji = emoji.trim() || "📝";
+  const displayEmoji = (studyWord.emoji ?? "").trim() || "📝";
   const displayTitle = deckTitle || category;
 
   const frontContent = buildFaceContent(
     direction,
     "front",
-    wordUk,
-    wordNl,
-    exampleUk,
-    exampleNl,
+    word,
+    translation,
+    example_word,
+    example_translation,
   );
   const backContent = buildFaceContent(
     direction,
     "back",
-    wordUk,
-    wordNl,
-    exampleUk,
-    exampleNl,
+    word,
+    translation,
+    example_word,
+    example_translation,
+    displayEmoji,
   );
 
   useEffect(() => {
@@ -305,7 +308,7 @@ export function FlipCard({
       <p
         className={`text-center text-xs font-bold uppercase tracking-widest text-blue-400 ${className}`}
       >
-        {displayTitle} {displayEmoji}
+        {displayTitle} 
       </p>
     );
   }
@@ -318,7 +321,7 @@ export function FlipCard({
         }`}
       >
         <div className="flex w-full flex-1 flex-col items-center justify-center">
-          <DirectionBadge className="mb-2" />
+          {/* <DirectionBadge className="mb-2" /> */}
           <CategoryHeader />
 
           {frontContent.mainWord ? (
@@ -333,12 +336,7 @@ export function FlipCard({
             </p>
           ) : null}
 
-          {frontContent.secondaryWord ? (
-            <p className="mt-2 text-center text-xl font-bold text-green-400 sm:text-2xl">
-              {frontContent.secondaryWord}
-            </p>
-          ) : null}
-
+          
           {frontContent.exampleSentence.trim() ? (
             <ExampleBar>
               {boldWordInSentence(
@@ -357,7 +355,7 @@ export function FlipCard({
               onSpeak={(e) =>
                 void handleSpeak(
                   e,
-                  frontContent.speechText,
+                  frontContent.mainWord,
                   frontContent.lang,
                   "front",
                 )
@@ -382,14 +380,21 @@ export function FlipCard({
         }`}
       >
         <div className="flex w-full flex-1 flex-col items-center justify-center">
-          <DirectionBadge className="mb-2" />
-          <p className="text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">
+          {/* <DirectionBadge className="mb-2" /> */}
+          {/* <p className="text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">
             {answerLabel}
-          </p>
+          </p> */}
           <CategoryHeader className="mt-2" />
+
+          {backContent.emoji ? (
+            <span className="mt-6 text-4xl" aria-hidden>
+              {backContent.emoji}
+            </span>
+          ) : null}
 
           {backContent.mainWord ? (
             <p className="mt-4 text-center text-3xl font-bold text-green-400 sm:text-4xl">
+              
               {backContent.mainWord}
             </p>
           ) : null}

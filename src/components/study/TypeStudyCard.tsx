@@ -9,7 +9,7 @@ import {
 } from "@/lib/audio";
 import {
   compareAnswer,
-  getTranslit,
+  getPhonetic,
   isUkrainianPrompt,
   type StudyDirection,
   type StudyWord,
@@ -20,24 +20,27 @@ import {
 } from "@/components/study/StudyCardFace";
 
 type TypeStudyCardProps = {
-  word: StudyWord;
+  studyWord: StudyWord;
   direction: StudyDirection;
   disabled?: boolean;
   onRevealed?: () => void;
 };
 
 export function TypeStudyCard({
-  word,
+  studyWord,
   direction,
   disabled = false,
   onRevealed,
 }: TypeStudyCardProps) {
-  const prompt = direction === "ua-nl" ? word.term : word.translation;
-  const answer = direction === "ua-nl" ? word.translation : word.term;
+  const prompt =
+    direction === "ua-nl" ? studyWord.translation : studyWord.word;
+  const answer = direction === "ua-nl" ? studyWord.word : studyWord.translation;
   const promptLang = direction === "ua-nl" ? "Oekraïens" : "Nederlands";
   const answerLang = direction === "ua-nl" ? "Nederlands" : "Oekraïens";
   const speechLang: SpeechLanguage = direction === "ua-nl" ? "uk-UA" : "nl-NL";
-  const translit = isUkrainianPrompt(direction) ? getTranslit(word) : null;
+  const phonetic = isUkrainianPrompt(direction)
+    ? getPhonetic(studyWord)
+    : null;
 
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -54,7 +57,7 @@ export function TypeStudyCard({
     setChecked(false);
     setCorrect(false);
     stopSpeech();
-  }, [word.id]);
+  }, [studyWord.id]);
 
   const handleCheck = useCallback(() => {
     if (disabled || checked) return;
@@ -79,7 +82,7 @@ export function TypeStudyCard({
   return (
     <div className="relative rounded-2xl border border-zinc-700 bg-zinc-800 px-5 py-6 shadow-xl">
       <StudyCategoryBadge
-        category={word.category}
+        category={studyWord.category}
         className="absolute left-3 top-3"
       />
 
@@ -89,14 +92,14 @@ export function TypeStudyCard({
             Typ in het {answerLang.toLowerCase()}
           </p>
           <p className="mt-1 text-xs text-zinc-500">{promptLang}</p>
-          {word.emoji ? (
+          {studyWord.emoji ? (
             <span className="mt-2 block text-2xl" aria-hidden>
-              {word.emoji}
+              {studyWord.emoji}
             </span>
           ) : null}
           <p className="mt-1 text-2xl font-semibold text-zinc-50">{prompt}</p>
-          {translit ? (
-            <p className="mt-1 text-sm italic text-zinc-400">{translit}</p>
+          {phonetic ? (
+            <p className="mt-1 text-sm italic text-zinc-400">{phonetic}</p>
           ) : null}
         </div>
         <button
@@ -110,7 +113,7 @@ export function TypeStudyCard({
         </button>
       </div>
 
-      <StudyWordExamples word={word} />
+      <StudyWordExamples studyWord={studyWord} />
 
       <div className="mt-5">
         <input

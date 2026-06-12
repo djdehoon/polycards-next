@@ -1,11 +1,11 @@
--- Seed catalog from legacy/general.js (WORDS). Idempotent on slug + (deck_id, term).
+-- Seed catalog from legacy/general.js (WORDS). Idempotent on slug + (deck_id, word).
 
 insert into public.decks (slug, title, description, sort_order)
 values ('general', 'General', 'Starter vocabulary', 0)
 on conflict (slug) do nothing;
 
-insert into public.words (deck_id, term, translation, sort_order)
-select d.id, v.term, v.translation, v.sort_order
+insert into public.words (deck_id, word, translation, sort_order)
+select d.id, v.word, v.translation, v.sort_order
 from public.decks d
 cross join (
   values
@@ -19,6 +19,6 @@ cross join (
     ('bread', 'pain', 7),
     ('friend', 'ami / amie', 8),
     ('today', 'aujourd''hui', 9)
-) as v(term, translation, sort_order)
+) as v(word, translation, sort_order)
 where d.slug = 'general'
-on conflict (deck_id, term) do nothing;
+on conflict (deck_id, word) do nothing;
