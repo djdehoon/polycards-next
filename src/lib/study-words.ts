@@ -9,6 +9,7 @@ export type StudyWord = {
   example_nl?: string | null;
   category?: string | null;
   emoji?: string | null;
+  deckTitle?: string | null;
 };
 
 export type StudyDirection = "ua-nl" | "nl-ua";
@@ -16,11 +17,19 @@ export type StudyDirectionMode = StudyDirection | "mix";
 export type StudyMode = "flashcard" | "type";
 
 export const STUDY_WORD_SELECT =
-  "id, deck_id, sort_order, term, translation, word_uk, word_nl, translit, phonetic, example_uk, example_nl, example_word, example_translation, category, emoji";
+  "id, deck_id, sort_order, term, translation, translit, phonetic, example_uk, example_nl, example_term, example_word, example_translation, category, emoji";
 
 function optionalString(value: unknown): string | null {
   if (value == null || value === "") return null;
   return String(value);
+}
+
+function extractDeckTitle(row: Record<string, unknown>): string | null {
+  const decks = row.decks;
+  if (decks && typeof decks === "object" && decks !== null && "title" in decks) {
+    return optionalString((decks as { title?: unknown }).title);
+  }
+  return null;
 }
 
 function coalesceString(...values: unknown[]): string {
@@ -32,9 +41,58 @@ function coalesceString(...values: unknown[]): string {
   return "";
 }
 
+const CYRILLIC_PATTERN = /[\u0400-\u04FF]/;
+
+function hasCyrillic(text: string): boolean {
+  return CYRILLIC_PATTERN.test(text);
+}
+
+function fixNlUkWordPair(term: string, translation: string): [string, string] {
+  if (
+    term &&
+    translation &&
+    !hasCyrillic(term) &&
+    hasCyrillic(translation)
+  ) {
+    return [translation, term];
+  }
+  if (!term && translation && hasCyrillic(translation)) {
+    return [translation, ""];
+  }
+  if (term && !translation && !hasCyrillic(term)) {
+    return ["", term];
+  }
+  return [term, translation];
+}
+
+function fixNlUkExamplePair(
+  exampleUk: string,
+  exampleNl: string,
+): [string, string] {
+  if (
+    exampleUk &&
+    exampleNl &&
+    !hasCyrillic(exampleUk) &&
+    hasCyrillic(exampleNl)
+  ) {
+    return [exampleNl, exampleUk];
+  }
+  if (exampleUk && !hasCyrillic(exampleUk)) {
+    return ["", exampleNl || exampleUk];
+  }
+  return [exampleUk, exampleNl];
+}
+
 export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
-  const term = coalesceString(row.word_uk, row.term);
-  const translation = coalesceString(row.word_nl, row.translation);
+  const [term, translation] = fixNlUkWordPair(
+    coalesceString(row.term, row.word_uk),
+    coalesceString(row.translation, row.word_nl),
+  );
+
+  const [exampleUk, exampleNl] = fixNlUkExamplePair(
+    coalesceString(row.example_term, row.example_uk, row.example_word),
+    coalesceString(row.example_translation, row.example_nl),
+  );
 
   return {
     id: String(row.id),
@@ -44,10 +102,11 @@ export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
     sort_order:
       typeof row.sort_order === "number" ? row.sort_order : undefined,
     translit: optionalString(row.translit ?? row.phonetic),
-    example_uk: optionalString(row.example_uk ?? row.example_word),
-    example_nl: optionalString(row.example_nl ?? row.example_translation),
+    example_uk: optionalString(exampleUk),
+    example_nl: optionalString(exampleNl),
     category: optionalString(row.category),
     emoji: optionalString(row.emoji),
+    deckTitle: extractDeckTitle(row) ?? optionalString(row.category),
   };
 }
 

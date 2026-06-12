@@ -44,7 +44,10 @@ async function fetchWordsForDeck(
 ) {
   const primary = await supabase
     .from("words")
-    .select(STUDY_WORD_SELECT)
+    .select(`
+      ${STUDY_WORD_SELECT},
+      decks!inner(title)
+    `)
     .eq("deck_id", deckId)
     .order("sort_order", { ascending: true });
 
@@ -59,7 +62,10 @@ async function fetchWordsForDeck(
 
   const fallback = await supabase
     .from("words")
-    .select("*")
+    .select(`
+      *,
+      decks!inner(title)
+    `)
     .eq("deck_id", deckId)
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
@@ -275,7 +281,7 @@ function StudySession() {
   useEffect(() => {
     setIsFlipped(false);
     setAnswerRevealed(false);
-  }, [current?.word.id, studyMode]);
+  }, [current?.word.id, studyMode, cardDirection]);
 
   const done =
     !loading &&
@@ -495,14 +501,8 @@ function StudySession() {
       {studyMode === "flashcard" ? (
         <>
           <FlipCard
-            key={current!.word.id}
-            word={current!.word.translation}
-            translation={current!.word.term}
-            phonetic={current!.word.translit ?? ""}
-            example_word={current!.word.example_nl ?? ""}
-            example_translation={current!.word.example_uk ?? ""}
-            category={current!.word.category ?? ""}
-            emoji={current!.word.emoji ?? "📝"}
+            key={`${current!.word.id}-${cardDirection}`}
+            studyWord={current!.word}
             direction={cardDirection}
             isFlipped={isFlipped}
             onFlip={setIsFlipped}
@@ -521,7 +521,7 @@ function StudySession() {
         </>
       ) : (
         <TypeStudyCard
-          key={current!.word.id}
+          key={`${current!.word.id}-${cardDirection}`}
           word={current!.word}
           direction={cardDirection}
           disabled={saving}
