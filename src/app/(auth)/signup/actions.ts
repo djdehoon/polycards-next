@@ -42,13 +42,7 @@ export async function signupAction(
       return state({ error: "Password must be at least 8 characters." });
     }
 
-    let origin: string;
-    try {
-      origin = await getRequestOrigin();
-    } catch {
-      origin = "http://localhost:3000";
-    }
-
+    const origin = await getRequestOrigin();
     const supabase = await createServerSupabaseClient();
 
     const { data, error } = await supabase.auth.signUp({
