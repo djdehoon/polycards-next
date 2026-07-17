@@ -1,5 +1,3 @@
-import { existsSync } from "fs";
-import { resolve } from "path";
 import { TextToSpeechClient } from "@google-cloud/text-to-speech";
 
 export const TTS_LANGUAGE_CODES = [
@@ -32,16 +30,9 @@ const VOICE_MAP: Record<
 
 let client: TextToSpeechClient | null = null;
 
-function getCredentialsPath(): string | null {
-  const raw = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
-  if (!raw) return null;
-  const path = resolve(process.cwd(), raw);
-  return existsSync(path) ? path : null;
-}
-
 export function isGoogleTtsConfigured(): boolean {
   if (process.env.GOOGLE_CREDENTIALS_JSON?.trim()) return true;
-  return getCredentialsPath() !== null;
+  return Boolean(process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim());
 }
 
 function getClient(): TextToSpeechClient {
@@ -55,12 +46,13 @@ function getClient(): TextToSpeechClient {
     return client;
   }
 
-  const keyFilename = getCredentialsPath();
-  if (!keyFilename) {
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim()) {
     throw new Error("Google Cloud TTS is not configured");
   }
 
-  client = new TextToSpeechClient({ keyFilename });
+  // Application Default Credentials reads GOOGLE_APPLICATION_CREDENTIALS.
+  // Avoid fs/path + process.cwd() here — it triggers Turbopack whole-project NFT tracing.
+  client = new TextToSpeechClient();
   return client;
 }
 

@@ -1,8 +1,9 @@
 // lib/queries/words.ts (or wherever your word queries are)
-import { supabase } from '@/lib/supabase/client';
-import { Word, WordRow, mapWordRowToWord } from '@/lib/db/types';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { Word, mapWordRowToWord } from '../db/types';
 
 export async function getWordsByDeck(deckSlug: string): Promise<Word[]> {
+  const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from('words')
     .select(`
@@ -18,6 +19,7 @@ export async function getWordsByDeck(deckSlug: string): Promise<Word[]> {
 }
 
 export async function getWordsByLanguagePair(languagePairCode: string): Promise<Word[]> {
+  const supabase = createBrowserSupabaseClient();
   // First get the language pair
   const { data: pair, error: pairError } = await supabase
     .from('language_pairs')

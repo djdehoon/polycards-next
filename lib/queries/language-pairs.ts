@@ -1,8 +1,9 @@
 // lib/queries/language-pairs.ts
-import { supabase } from '@/lib/supabase/client';
-import { LanguagePair } from '@/lib/db/types';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { LanguagePair } from '../db/types';
 
 export async function getAllLanguagePairs(): Promise<LanguagePair[]> {
+  const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from('language_pairs')
     .select('*')
@@ -14,6 +15,7 @@ export async function getAllLanguagePairs(): Promise<LanguagePair[]> {
 }
 
 export async function getLanguagePairByCode(code: string): Promise<LanguagePair | null> {
+  const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from('language_pairs')
     .select('*')
