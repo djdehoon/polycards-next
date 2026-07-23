@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  SPEAK_FAILED_MESSAGE,
   isSpeechSupported,
   speakWord,
   stopSpeech,
@@ -47,6 +48,7 @@ export function TypeStudyCard({
   const [correct, setCorrect] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [speechAvailable, setSpeechAvailable] = useState(false);
+  const [speakError, setSpeakError] = useState<string | null>(null);
 
   useEffect(() => {
     setSpeechAvailable(isSpeechSupported());
@@ -56,6 +58,7 @@ export function TypeStudyCard({
     setInput("");
     setChecked(false);
     setCorrect(false);
+    setSpeakError(null);
     stopSpeech();
   }, [studyWord.id]);
 
@@ -70,10 +73,12 @@ export function TypeStudyCard({
   const handleSpeak = useCallback(async () => {
     if (disabled || speaking || !speechAvailable) return;
     setSpeaking(true);
+    setSpeakError(null);
     try {
       await speakWord(prompt, speechLang);
     } catch (err) {
       console.error("[audio] speak failed:", err);
+      setSpeakError(SPEAK_FAILED_MESSAGE);
     } finally {
       setSpeaking(false);
     }
@@ -112,6 +117,15 @@ export function TypeStudyCard({
           {speaking ? "…" : "🔊 Uitspraak"}
         </button>
       </div>
+      {speakError ? (
+        <p
+          role="alert"
+          aria-live="polite"
+          className="mt-2 text-xs text-amber-400"
+        >
+          {speakError}
+        </p>
+      ) : null}
 
       <StudyWordExamples studyWord={studyWord} />
 

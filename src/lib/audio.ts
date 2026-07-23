@@ -115,6 +115,17 @@ function speakWithWebSpeech(
   );
 }
 
+export class SpeakError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SpeakError";
+  }
+}
+
+/** User-facing Dutch message when pronunciation cannot play. */
+export const SPEAK_FAILED_MESSAGE =
+  "Uitspraak lukte niet. Probeer het opnieuw.";
+
 async function speakWithGoogleTts(
   text: string,
   language: SpeechLanguage,
@@ -132,7 +143,24 @@ async function speakWithGoogleTts(
   });
 
   if (!response.ok) {
-    throw new Error(`TTS API error: ${response.status}`);
+    let detail = `TTS API error: ${response.status}`;
+    try {
+      const errBody = (await response.json()) as { error?: string };
+      if (errBody.error) {
+        detail = `TTS API error: ${response.status} (${errBody.error})`;
+        if (
+          response.status === 503 &&
+          errBody.error.toLowerCase().includes("not configured")
+        ) {
+          console.error(
+            "[audio] Google TTS is not configured on this environment. Set GOOGLE_CREDENTIALS_JSON (Vercel) or GOOGLE_APPLICATION_CREDENTIALS (local).",
+          );
+        }
+      }
+    } catch {
+      // ignore JSON parse errors for error body
+    }
+    throw new Error(detail);
   }
 
   const data = (await response.json()) as { audio?: string };
@@ -168,7 +196,7 @@ export async function speakWord(
 ): Promise<void> {
   const trimmed = text.trim();
   if (!trimmed) {
-    throw new Error("Cannot speak empty text");
+    throw new SpeakError("Cannot speak empty text");
   }
 
   stopSpeech();
@@ -176,7 +204,15 @@ export async function speakWord(
   try {
     await speakWithGoogleTts(trimmed, language, options);
   } catch (error) {
-    console.warn("[audio] Google TTS unavailable, falling back to Web Speech:", error);
-    await speakWithWebSpeech(trimmed, language, options);
+    console.warn(
+      "[audio] Google TTS unavailable, falling back to Web Speech:",
+      error,
+    );
+    try {
+      await speakWithWebSpeech(trimmed, language, options);
+    } catch (fallbackError) {
+      console.error("[audio] Web Speech fallback failed:", fallbackError);
+      throw new SpeakError(SPEAK_FAILED_MESSAGE);
+    }
   }
 }

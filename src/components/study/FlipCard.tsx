@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
+  SPEAK_FAILED_MESSAGE,
   isSpeechSupported,
   speakWord,
   stopSpeech,
@@ -194,6 +195,7 @@ export function FlipCard({
 
   const [isSpeaking, setIsSpeaking] = useState<SpeakingSide | null>(null);
   const [speechAvailable, setSpeechAvailable] = useState(false);
+  const [speakError, setSpeakError] = useState<string | null>(null);
 
   const word = studyWord.word;
   const translation = studyWord.translation;
@@ -234,6 +236,7 @@ export function FlipCard({
       setInternalFlipped(false);
     }
     setIsSpeaking(null);
+    setSpeakError(null);
     stopSpeech();
     return () => {
       stopSpeech();
@@ -278,10 +281,12 @@ export function FlipCard({
         return;
 
       setIsSpeaking(side);
+      setSpeakError(null);
       try {
         await speakWord(text, language);
       } catch (err) {
         console.error("[audio] speak failed:", err);
+        setSpeakError(SPEAK_FAILED_MESSAGE);
       } finally {
         setIsSpeaking(null);
       }
@@ -480,6 +485,15 @@ export function FlipCard({
           {renderBackFace(!isFlipped)}
         </div>
       </div>
+      {speakError ? (
+        <p
+          role="alert"
+          aria-live="polite"
+          className="mt-2 text-center text-xs text-amber-400"
+        >
+          {speakError}
+        </p>
+      ) : null}
     </div>
   );
 }
