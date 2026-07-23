@@ -32,6 +32,14 @@ export async function loginAction(
   });
 
   if (error) {
+    console.error("[loginAction]", {
+      email: trimmedEmail,
+      passwordLength: password.length,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      code: error.code,
+      message: error.message,
+      status: error.status,
+    });
     return { error: error.message };
   }
 
