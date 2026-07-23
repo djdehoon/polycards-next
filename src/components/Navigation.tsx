@@ -9,6 +9,7 @@ const links = [
   { href: "/browse", label: "Browse" },
   { href: "/stats", label: "Stats" },
   { href: "/study", label: "Study" },
+  { href: "/instructions", label: "Instructies" },
 ] as const;
 
 function navClass(active: boolean): string {
