@@ -26,11 +26,6 @@ type Deck = {
 
 type WordRow = { id: string; deck_id: string };
 
-function deckEmoji(slug: string): string {
-  const map: Record<string, string> = { general: "🗂️" };
-  return map[slug] ?? "📚";
-}
-
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -191,78 +186,68 @@ export default async function DashboardPage({
                         : "border-zinc-800"
                     }`}
                   >
-                    <div className="flex items-start gap-2.5">
-                      <span
-                        className="shrink-0 text-xl leading-none sm:text-2xl"
-                        aria-hidden
-                      >
-                        {deckEmoji(deck.slug)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <h2 className="text-sm font-semibold text-zinc-50 sm:text-base">
-                            {deck.title}
-                          </h2>
-                          <Link
-                            href={`/study?deck=${deck.id}`}
-                            className="shrink-0 rounded-md bg-zinc-600 px-2.5 py-1 text-[11px] font-medium text-zinc-100 transition hover:bg-zinc-500 sm:text-xs"
-                          >
-                            Studeren →
-                          </Link>
-                        </div>
-                        {deck.description ? (
-                          <p className="mt-0.5 line-clamp-1 text-xs text-zinc-500">
-                            {deck.description}
-                          </p>
-                        ) : null}
-                        <div className="mt-2">
-                          <div className="mb-1 flex justify-between text-[11px] text-zinc-500">
-                            <span>Voortgang</span>
-                            <span>{pct}%</span>
-                          </div>
-                          <svg
-                            className="h-1.5 w-full text-zinc-800"
-                            preserveAspectRatio="none"
-                            viewBox="0 0 100 2"
-                            aria-hidden
-                          >
-                            <rect
-                              width="100"
-                              height="2"
-                              className="fill-current"
-                              rx="1"
-                            />
-                            <rect
-                              width={pct}
-                              height="2"
-                              className="fill-zinc-500"
-                              rx="1"
-                            />
-                          </svg>
-                        </div>
-                        <dl className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-zinc-400">
-                          <div className="flex gap-1">
-                            <dt className="text-zinc-600">New</dt>
-                            <dd className="font-medium text-zinc-200">{stats.new}</dd>
-                          </div>
-                          <div className="flex gap-1">
-                            <dt className="text-zinc-600">Learning</dt>
-                            <dd className="font-medium text-zinc-200">
-                              {stats.learning}
-                            </dd>
-                          </div>
-                          <div className="flex gap-1">
-                            <dt className="text-zinc-600">Review</dt>
-                            <dd className="font-medium text-zinc-200">
-                              {stats.review}
-                            </dd>
-                          </div>
-                          <div className="flex gap-1">
-                            <dt className="text-zinc-600">Due</dt>
-                            <dd className="font-medium text-zinc-200">{stats.due}</dd>
-                          </div>
-                        </dl>
+                    <div className="min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h2 className="text-sm font-semibold text-zinc-50 sm:text-base">
+                          {deck.title}
+                        </h2>
+                        <Link
+                          href={`/study?deck=${deck.id}`}
+                          className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-blue-500 sm:text-xs"
+                        >
+                          Studeren →
+                        </Link>
                       </div>
+                      {deck.description ? (
+                        <p className="mt-0.5 line-clamp-1 text-xs text-zinc-500">
+                          {deck.description}
+                        </p>
+                      ) : null}
+                      <div className="mt-2">
+                        <div className="mb-1 flex justify-between text-[11px] text-zinc-500">
+                          <span>Voortgang</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <svg
+                          className="h-1.5 w-full text-zinc-800"
+                          preserveAspectRatio="none"
+                          viewBox="0 0 100 2"
+                          aria-hidden
+                        >
+                          <rect
+                            width="100"
+                            height="2"
+                            className="fill-current"
+                            rx="1"
+                          />
+                          <rect
+                            width={pct}
+                            height="2"
+                            className="fill-zinc-500"
+                            rx="1"
+                          />
+                        </svg>
+                      </div>
+                      <dl className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
+                        <div className="flex gap-1">
+                          <dt className="text-blue-400">New</dt>
+                          <dd className="font-medium text-blue-400">
+                            {stats.new}
+                          </dd>
+                        </div>
+                        <div className="flex gap-1">
+                          <dt className="text-red-500">Learning</dt>
+                          <dd className="font-medium text-red-500">
+                            {stats.learning + stats.relearning}
+                          </dd>
+                        </div>
+                        <div className="flex gap-1">
+                          <dt className="text-green-500">Due</dt>
+                          <dd className="font-medium text-green-500">
+                            {stats.due}
+                          </dd>
+                        </div>
+                      </dl>
                     </div>
                   </article>
                 </li>

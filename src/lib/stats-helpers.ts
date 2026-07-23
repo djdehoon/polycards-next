@@ -59,7 +59,6 @@ export function deckWordStats(
     const p = progressByWordId.get(id);
     if (!p) {
       newC += 1;
-      due += 1;
       continue;
     }
     if (p.reps > 0) learned += 1;
@@ -72,14 +71,15 @@ export function deckWordStats(
         break;
       case State.Review:
         review += 1;
+        if (new Date(p.due_date) <= now) due += 1;
         break;
       case State.Relearning:
         relearning += 1;
+        if (new Date(p.due_date) <= now) due += 1;
         break;
       default:
         newC += 1;
     }
-    if (new Date(p.due_date) <= now) due += 1;
   }
 
   return {
