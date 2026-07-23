@@ -283,7 +283,7 @@ export function FlipCard({
       setIsSpeaking(side);
       setSpeakError(null);
       try {
-        await speakWord(text, language);
+        await speakWord(text, language, { rate: 0.8, pitch: 1.0 });
       } catch (err) {
         console.error("[audio] speak failed:", err);
         setSpeakError(SPEAK_FAILED_MESSAGE);
@@ -341,7 +341,6 @@ export function FlipCard({
             </p>
           ) : null}
 
-          
           {frontContent.exampleSentence.trim() ? (
             <ExampleBar>
               {boldWordInSentence(
@@ -351,23 +350,42 @@ export function FlipCard({
             </ExampleBar>
           ) : null}
 
-          {frontContent.speechText.trim() && (
-            <SpeakButton
-              side="front"
-              isSpeaking={isSpeaking}
-              disabled={disabled}
-              speechAvailable={speechAvailable}
-              onSpeak={(e) =>
-                void handleSpeak(
-                  e,
-                  frontContent.mainWord,
-                  frontContent.lang,
-                  "front",
-                )
-              }
-              label="Uitspraak"
-            />
-          )}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            {frontContent.mainWord.trim() && (
+              <SpeakButton
+                side="front"
+                isSpeaking={isSpeaking}
+                disabled={disabled}
+                speechAvailable={speechAvailable}
+                onSpeak={(e) =>
+                  void handleSpeak(
+                    e,
+                    frontContent.mainWord,
+                    frontContent.lang,
+                    "front",
+                  )
+                }
+                label="Woord"
+              />
+            )}
+            {frontContent.exampleSentence.trim() && (
+              <SpeakButton
+                side="front"
+                isSpeaking={isSpeaking}
+                disabled={disabled}
+                speechAvailable={speechAvailable}
+                onSpeak={(e) =>
+                  void handleSpeak(
+                    e,
+                    frontContent.exampleSentence,
+                    frontContent.lang,
+                    "front",
+                  )
+                }
+                label="Zin"
+              />
+            )}
+          </div>
         </div>
 
         {!isFlipped ? (
