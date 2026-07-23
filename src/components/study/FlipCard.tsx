@@ -128,8 +128,8 @@ function buildFaceContent(
   if (side === "front") {
     if (isUaNl) {
       const exampleSentence =
-        swapWordInSentence(example_word, word, translation) ||
         example_translation ||
+        swapWordInSentence(example_word, word, translation) ||
         example_word;
       return {
         mainWord: translation,
@@ -143,8 +143,8 @@ function buildFaceContent(
     }
 
     const exampleSentence =
-      swapWordInSentence(example_translation, translation, word) ||
       example_word ||
+      swapWordInSentence(example_translation, translation, word) ||
       example_translation;
     return {
       mainWord: word,
