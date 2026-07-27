@@ -89,6 +89,16 @@ function FlagSweden() {
   );
 }
 
+function FlagItaly() {
+  return (
+    <svg viewBox={vb} width={80} height={60} className="shrink-0" aria-hidden>
+      <rect width={27} height={60} fill="#009246" />
+      <rect x={27} width={26} height={60} fill="#FFFFFF" />
+      <rect x={53} width={27} height={60} fill="#CE2B37" />
+    </svg>
+  );
+}
+
 type Props = { id: string };
 
 export function LanguageFlagSvg({ id }: Props) {
@@ -109,6 +119,8 @@ export function LanguageFlagSvg({ id }: Props) {
       return <FlagFinland />;
     case "swedish":
       return <FlagSweden />;
+    case "italian":
+      return <FlagItaly />;
     default:
       return <FlagUkraine />;
   }

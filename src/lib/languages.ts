@@ -41,9 +41,55 @@ export type ChooseLanguageGridRow = {
   rowKey: string;
   languageId: string;
   linkOverride?: ChooseLanguageLink;
+  /** Overrides language default display (e.g. V2 Chinese ↔ Nederlands). */
+  displayOverride?: ChooseLanguageDisplay;
 };
 
-/** Grid order: Portuguese 5th; first Ukrainian → Netlify; last Ukrainian → /dashboard. */
+/** New V2 Apps: Next.js Ukrainian, Spanish, Chinese (login / WIP). */
+export const CHOOSE_LANGUAGE_V2_GRID_ROWS: ChooseLanguageGridRow[] = [
+  {
+    rowKey: "ukrainian-v2",
+    languageId: "ukrainian",
+    linkOverride: {
+      href: "/login",
+      target: "_self",
+      buttonText: "Log In",
+      useNextLink: true,
+    },
+  },
+  {
+    rowKey: "spanish-v2",
+    languageId: "spanish",
+    linkOverride: {
+      href: "/login",
+      target: "_self",
+      buttonText: "Work in Progress",
+      useNextLink: true,
+    },
+    displayOverride: {
+      subtitle: "English ↔ Español",
+      status: "live",
+      statsLine: "100 words • 10 categories",
+    },
+  },
+  {
+    rowKey: "chinese-v2",
+    languageId: "chinese",
+    linkOverride: {
+      href: "/login",
+      target: "_self",
+      buttonText: "Log In",
+      useNextLink: true,
+    },
+    displayOverride: {
+      subtitle: "Nederlands ↔ 中文",
+      status: "live",
+      statsLine: "100 words • 10 categories",
+    },
+  },
+];
+
+/** Former V1 Apps: Netlify Ukrainian + static dictionary HTML. */
 export const CHOOSE_LANGUAGE_GRID_ROWS: ChooseLanguageGridRow[] = [
   {
     rowKey: "ukrainian-netlify",
@@ -62,16 +108,7 @@ export const CHOOSE_LANGUAGE_GRID_ROWS: ChooseLanguageGridRow[] = [
   { rowKey: "arabic", languageId: "arabic" },
   { rowKey: "finnish", languageId: "finnish" },
   { rowKey: "swedish", languageId: "swedish" },
-  {
-    rowKey: "ukrainian-dashboard",
-    languageId: "ukrainian",
-    linkOverride: {
-      href: "/dashboard",
-      target: "_self",
-      buttonText: "Work in progress",
-      useNextLink: true,
-    },
-  },
+  { rowKey: "italian", languageId: "italian" },
 ];
 
 function threeDecks(langLabel: string, prefix: string): LandingDeck[] {
@@ -171,7 +208,7 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       subtitle: "العربية ↔ English",
       status: "coming_soon",
       statsLine: "100 words • 10 categories",
-      comingSoonLabel: "May 2026",
+      comingSoonLabel: "August 2026",
     },
   },
   {
@@ -183,7 +220,7 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       subtitle: "Suomi ↔ English",
       status: "coming_soon",
       statsLine: "100 words • 10 categories",
-      comingSoonLabel: "May 2026",
+      comingSoonLabel: "September 2026",
     },
   },
   {
@@ -195,7 +232,19 @@ export const LANDING_LANGUAGES: LandingLanguage[] = [
       subtitle: "Svenska ↔ English",
       status: "coming_soon",
       statsLine: "100 words • 10 categories",
-      comingSoonLabel: "June 2026",
+      comingSoonLabel: "October 2026",
+    },
+  },
+  {
+    id: "italian",
+    label: "Italian",
+    flag: "🇮🇹",
+    decks: threeDecks("Italian", "italian"),
+    chooseLanguageDisplay: {
+      subtitle: "Italiano ↔ English",
+      status: "coming_soon",
+      statsLine: "100 words • 10 categories",
+      comingSoonLabel: "November 2026",
     },
   },
 ];
