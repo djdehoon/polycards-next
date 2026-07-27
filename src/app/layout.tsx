@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/react';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Ma_Shan_Zheng, Noto_Sans_SC } from "next/font/google";
 import { PwaRegister } from "@/components/PwaRegister";
+import { UiScaleControl } from "@/components/UiScaleControl";
 import { APP_VERSION } from "@/lib/app-version";
 import "./globals.css";
 
@@ -122,6 +123,8 @@ export const viewport: Viewport = {
   themeColor: "#0057B8",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 3,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -138,6 +141,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <PwaRegister />
+        <UiScaleControl />
         <footer
           className="pointer-events-none fixed bottom-3 right-4 z-50 rounded-md border border-zinc-700/60 bg-zinc-950/85 px-2 py-1 text-xs text-zinc-400 backdrop-blur-sm"
           aria-label={`App version ${APP_VERSION}`}
