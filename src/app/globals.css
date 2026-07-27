@@ -70,3 +70,19 @@ body {
 .zh-sentence {
   font-family: var(--font-noto-sans-sc), "Noto Sans SC", sans-serif;
 }
+
+/* Sentence Analysis Animation */
+@keyframes slide-in-from-top-2 {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.analysis-panel-enter {
+  animation: slide-in-from-top-2 300ms ease both;
+}

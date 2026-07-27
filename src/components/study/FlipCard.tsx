@@ -15,6 +15,8 @@ import {
   type LanguagePairCode,
 } from "@/lib/language-pairs";
 import { ChineseStrokeOrder } from "@/components/study/ChineseStrokeOrder";
+import { SentenceAnalysis } from "@/components/study/SentenceAnalysis";
+import { hasWordAnalysis } from "@/config/features";
 
 export type FlipCardProps = {
   studyWord: StudyWord;
@@ -509,6 +511,16 @@ export function FlipCard({
             </ExampleBar>
           )}
 
+          {hasWordAnalysis(languagePair) &&
+          frontContent.lang === "zh-CN" &&
+          frontContent.exampleSentence.trim() ? (
+            <SentenceAnalysis
+              chineseSentence={frontContent.exampleSentence}
+              pinyinSentence={example_translation2 || ""}
+              languagePairCode={languagePair}
+            />
+          ) : null}
+
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {frontContent.mainWord.trim() && (
               <SpeakButton
@@ -627,6 +639,16 @@ export function FlipCard({
               )}
             </ExampleBar>
           )}
+
+          {hasWordAnalysis(languagePair) &&
+          backContent.lang === "zh-CN" &&
+          backContent.exampleSentence.trim() ? (
+            <SentenceAnalysis
+              chineseSentence={backContent.exampleSentence}
+              pinyinSentence={example_translation2 || ""}
+              languagePairCode={languagePair}
+            />
+          ) : null}
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             {backContent.mainWord.trim() && (
