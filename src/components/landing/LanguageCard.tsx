@@ -1,6 +1,7 @@
 "use client";
 
 import { setLanguagePair } from "@/app/actions/language-pair";
+import { notifyLanguagePairChange } from "@/components/AppVersionBadge";
 import type { ChooseLanguageDisplay, ChooseLanguageLink } from "@/lib/languages";
 import {
   LANGUAGE_PAIR_STORAGE_KEY,
@@ -103,6 +104,7 @@ export function LanguageCard({ id, label, index, display, chooseLink }: Props) {
     if (pending) return;
 
     localStorage.setItem(LANGUAGE_PAIR_STORAGE_KEY, pair);
+    notifyLanguagePairChange(pair);
     startTransition(() => {
       void setLanguagePair(pair).then(() => {
         router.push(href);

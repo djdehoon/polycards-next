@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setLanguagePair } from "@/app/actions/language-pair";
+import { notifyLanguagePairChange } from "@/components/AppVersionBadge";
 import {
   LANGUAGE_PAIR_STORAGE_KEY,
   languagePairLabel,
@@ -25,6 +26,7 @@ export function LanguagePairSelector({
     if (!parsed || parsed.code === activePair) return;
 
     localStorage.setItem(LANGUAGE_PAIR_STORAGE_KEY, parsed.code);
+    notifyLanguagePairChange(parsed.code);
 
     startTransition(() => {
       void setLanguagePair(parsed.code).then(() => {

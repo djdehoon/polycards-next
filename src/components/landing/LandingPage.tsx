@@ -56,7 +56,9 @@ export function LandingPage({ appVersion }: Props) {
             Short sessions on a steady schedule—built for retention, not cramming.
             Choose a language below to practice, or read Why it works in the header.
           </p>
-          <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">{appVersion}</p>
+          <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">
+            {appVersion}
+          </p>
         </section>
 
         <OgImageBanner />

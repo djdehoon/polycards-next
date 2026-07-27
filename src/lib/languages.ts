@@ -75,7 +75,7 @@ export const CHOOSE_LANGUAGE_V2_GRID_ROWS: ChooseLanguageGridRow[] = [
     displayOverride: {
       subtitle: "English ↔ Español",
       status: "live",
-      statsLine: "100 words • 10 categories",
+      statsLine: "Lin Edition · 100 words • 10 categories",
     },
   },
   {
