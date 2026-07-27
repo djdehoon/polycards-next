@@ -74,6 +74,67 @@ function boldWordInSentence(sentence: string, target: string): ReactNode {
   );
 }
 
+function stripTrailingPunctuation(token: string): string {
+  return token.replace(/[.,!?;:…]+$/u, "");
+}
+
+/** Bold target for transliteration line: same word index as highlighted in primary sentence. */
+function exampleTranslation2BoldTarget(
+  primarySentence: string,
+  secondarySentence: string,
+  boldTarget: string,
+): string {
+  const secondaryWords = secondarySentence
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!secondaryWords.length) return "";
+
+  if (boldTarget.trim()) {
+    const directPattern = new RegExp(
+      boldTarget.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i",
+    );
+    if (directPattern.test(secondarySentence)) return boldTarget;
+  }
+
+  if (!primarySentence.trim() || !boldTarget.trim()) {
+    return stripTrailingPunctuation(secondaryWords[0]);
+  }
+
+  const primaryWords = primarySentence.trim().split(/\s+/).filter(Boolean);
+  const targetPattern = new RegExp(
+    boldTarget.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    "i",
+  );
+
+  let matchWordIndex = primaryWords.findIndex((token) =>
+    targetPattern.test(stripTrailingPunctuation(token)),
+  );
+
+  if (matchWordIndex < 0) {
+    const match = primarySentence.match(targetPattern);
+    if (match?.index !== undefined) {
+      const before = primarySentence.slice(0, match.index).trim();
+      matchWordIndex = before ? before.split(/\s+/).length : 0;
+    }
+  }
+
+  if (matchWordIndex >= 0 && matchWordIndex < secondaryWords.length) {
+    return stripTrailingPunctuation(secondaryWords[matchWordIndex]);
+  }
+
+  return stripTrailingPunctuation(secondaryWords[0]);
+}
+
+function faceShowsExampleTranslation(
+  direction: StudyDirection,
+  side: "front" | "back",
+): boolean {
+  const isUaNl = direction === "ua-nl";
+  return side === "front" ? isUaNl : !isUaNl;
+}
+
 function SpeakButton({
   side,
   isSpeaking,
@@ -106,9 +167,17 @@ function SpeakButton({
   );
 }
 
-function ExampleBar({ children }: { children: ReactNode }) {
+function ExampleBar({
+  children,
+  className = "mt-5",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="mt-5 w-full rounded-lg bg-zinc-800/80 px-4 py-3 text-center text-sm text-zinc-300 sm:text-base">
+    <div
+      className={`${className} w-full rounded-lg bg-zinc-800/80 px-4 py-3 text-center text-sm text-zinc-300 sm:text-base`}
+    >
       {children}
     </div>
   );
@@ -201,6 +270,7 @@ export function FlipCard({
   const translation = studyWord.translation;
   const example_word = studyWord.example_word ?? "";
   const example_translation = studyWord.example_translation ?? "";
+  const example_translation2 = studyWord.example_translation2 ?? "";
   const phonetic = studyWord.phonetic ?? "";
   const category = studyWord.category ?? "";
   const deckTitle = studyWord.deckTitle ?? category;
@@ -349,6 +419,19 @@ export function FlipCard({
               )}
             </ExampleBar>
           ) : null}
+          {example_translation2 &&
+            faceShowsExampleTranslation(direction, "front") && (
+            <ExampleBar className="mt-2">
+              {boldWordInSentence(
+                example_translation2,
+                exampleTranslation2BoldTarget(
+                  frontContent.exampleSentence,
+                  example_translation2,
+                  frontContent.boldTarget,
+                ),
+              )}
+            </ExampleBar>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {frontContent.mainWord.trim() && (
@@ -436,6 +519,19 @@ export function FlipCard({
               )}
             </ExampleBar>
           ) : null}
+          {example_translation2 &&
+            faceShowsExampleTranslation(direction, "back") && (
+            <ExampleBar className="mt-2">
+              {boldWordInSentence(
+                example_translation2,
+                exampleTranslation2BoldTarget(
+                  backContent.exampleSentence,
+                  example_translation2,
+                  backContent.boldTarget,
+                ),
+              )}
+            </ExampleBar>
+          )}
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             {backContent.mainWord.trim() && (

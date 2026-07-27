@@ -8,6 +8,7 @@ export type StudyWord = {
   phonetic?: string | null;
   example_word?: string | null;
   example_translation?: string | null;
+  example_translation2?: string | null;
   category?: string | null;
   emoji?: string | null;
   deckTitle?: string | null;
@@ -18,7 +19,7 @@ export type StudyDirectionMode = StudyDirection | "mix";
 export type StudyMode = "flashcard" | "type";
 
 export const STUDY_WORD_SELECT =
-  "id, deck_id, sort_order, word, translation, phonetic, example_word, example_translation, category, emoji";
+  "id, deck_id, sort_order, word, translation, phonetic, example_word, example_translation, example_translation2, category, emoji";
 
 function optionalString(value: unknown): string | null {
   if (value == null || value === "") return null;
@@ -44,6 +45,7 @@ export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
     phonetic: optionalString(row.phonetic),
     example_word: optionalString(row.example_word),
     example_translation: optionalString(row.example_translation),
+    example_translation2: optionalString(row.example_translation2),
     category: optionalString(row.category),
     emoji: optionalString(row.emoji),
     deckTitle: extractDeckTitle(row) ?? optionalString(row.category),
