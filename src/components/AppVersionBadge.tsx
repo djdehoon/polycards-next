@@ -1,13 +1,14 @@
 "use client";
 
+import { formatAppVersionLabel, isLocalHostname } from "@/lib/app-version-label";
 import {
   LANGUAGE_PAIR_COOKIE,
   LANGUAGE_PAIR_STORAGE_KEY,
   parseLanguagePairCode,
   type LanguagePairCode,
 } from "@/lib/language-pairs";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export const LANGUAGE_PAIR_CHANGE_EVENT = "polycards:languagePair";
 
@@ -32,12 +33,24 @@ function readActivePair(): LanguagePairCode | null {
   return parseLanguagePairCode(readPairFromCookie());
 }
 
+function isAppShellPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/browse") ||
+    pathname.startsWith("/study") ||
+    pathname.startsWith("/stats") ||
+    pathname.startsWith("/instructions")
+  );
+}
+
 export function AppVersionBadge({ version }: { version: string }) {
   const pathname = usePathname();
   const [pair, setPair] = useState<LanguagePairCode | null>(null);
+  const [local, setLocal] = useState(false);
 
   useEffect(() => {
     setPair(readActivePair());
+    setLocal(isLocalHostname(window.location.hostname));
 
     function onPairChange(event: Event) {
       const detail = (event as CustomEvent<string>).detail;
@@ -46,6 +59,7 @@ export function AppVersionBadge({ version }: { version: string }) {
 
     function onFocus() {
       setPair(readActivePair());
+      setLocal(isLocalHostname(window.location.hostname));
     }
 
     window.addEventListener(LANGUAGE_PAIR_CHANGE_EVENT, onPairChange);
@@ -56,13 +70,17 @@ export function AppVersionBadge({ version }: { version: string }) {
     };
   }, [pathname]);
 
-  const showLin = pair === "en-es";
-  const label = showLin ? `${version} · Lin Edition` : version;
+  // Lin Edition only while using the app on en-es — not on landing/marketing.
+  const showLin = pair === "en-es" && isAppShellPath(pathname);
+  const label = formatAppVersionLabel(version, {
+    linEdition: showLin,
+    local,
+  });
 
   return (
     <footer
       className="pointer-events-none fixed bottom-3 right-4 z-50 rounded-md border border-zinc-700/60 bg-zinc-950/85 px-2 py-1 text-xs text-zinc-400 backdrop-blur-sm"
-      aria-label={showLin ? `App version ${version} Lin Edition` : `App version ${version}`}
+      aria-label={`App version ${label}`}
     >
       {label}
     </footer>

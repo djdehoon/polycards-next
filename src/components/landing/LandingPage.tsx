@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { formatAppVersionLabel, isLocalHostname } from "@/lib/app-version-label";
 import { ChooseLanguage } from "./ChooseLanguage";
 import { OgImageBanner } from "./OgImageBanner";
 import { PrototypeSection } from "./PrototypeSection";
@@ -11,6 +13,16 @@ type Props = {
 };
 
 export function LandingPage({ appVersion }: Props) {
+  const [versionLabel, setVersionLabel] = useState(appVersion);
+
+  useEffect(() => {
+    setVersionLabel(
+      formatAppVersionLabel(appVersion, {
+        local: isLocalHostname(window.location.hostname),
+      }),
+    );
+  }, [appVersion]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 font-['-apple-system','BlinkMacSystemFont','Segoe_UI',Roboto,sans-serif] text-zinc-100">
       <div
@@ -57,7 +69,7 @@ export function LandingPage({ appVersion }: Props) {
             Choose a language below to practice, or read Why it works in the header.
           </p>
           <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">
-            {appVersion}
+            {versionLabel}
           </p>
         </section>
 
