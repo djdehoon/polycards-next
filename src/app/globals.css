@@ -60,7 +60,7 @@ body {
 /* Chinese (nl-zh) study typography */
 .zh-calligraphy {
   font-family: var(--font-ma-shan-zheng), "Noto Sans SC", serif;
-  background: linear-gradient(135deg, #f0f0f0 0%, #fbbf24 45%, #f59e0b 100%);
+  background: linear-gradient(135deg, #f0f0f0 0%, #6ee7b7 45%, #10b981 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

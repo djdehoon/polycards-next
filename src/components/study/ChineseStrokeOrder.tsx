@@ -44,7 +44,7 @@ export function ChineseStrokeOrder({ characters }: { characters: string }) {
           height: SIZE,
           padding: 4,
           showOutline: true,
-          strokeColor: "#fbbf24",
+          strokeColor: "#34d399",
           outlineColor: "#3f3f46",
         }) as HanziWriterInstance;
         await writer.hideCharacter({ duration: 0 });

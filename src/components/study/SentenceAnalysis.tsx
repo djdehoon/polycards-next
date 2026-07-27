@@ -158,7 +158,7 @@ export function SentenceAnalysis({
       <button
         type="button"
         onClick={handleToggle}
-        className="w-full rounded-lg border-2 border-zinc-600 bg-zinc-800 px-4 py-2 font-semibold text-zinc-100 transition-all hover:border-amber-500 hover:bg-zinc-700"
+        className="w-full rounded-lg border-2 border-zinc-600 bg-zinc-800 px-4 py-2 font-semibold text-zinc-100 transition-all hover:border-emerald-500 hover:bg-zinc-700"
       >
         📖 Uitleg {isExpanded ? "▲" : "▼"}
       </button>
@@ -172,7 +172,7 @@ export function SentenceAnalysis({
           ) : (
             <>
               {loadError ? (
-                <p className="mb-2 text-center text-xs text-amber-400/90">
+                <p className="mb-2 text-center text-xs text-emerald-400/90">
                   {loadError}
                 </p>
               ) : null}
@@ -201,7 +201,7 @@ export function SentenceAnalysis({
                           {word.meaning_nl}
                         </span>
                         <span className="text-zinc-600">·</span>
-                        <span className="text-xs text-amber-400/90">
+                        <span className="text-xs text-emerald-400/90">
                           {word.word_type}
                         </span>
                       </div>
@@ -209,7 +209,7 @@ export function SentenceAnalysis({
                       <button
                         type="button"
                         onClick={(e) => handleAudioClick(e, word.word)}
-                        className="flex h-8 w-8 items-center justify-center rounded border border-zinc-600 bg-zinc-800 text-sm transition-all hover:border-amber-500 hover:bg-amber-600"
+                        className="flex h-8 w-8 items-center justify-center rounded border border-zinc-600 bg-zinc-800 text-sm transition-all hover:border-emerald-500 hover:bg-emerald-600"
                         title="Luister uitspraak"
                       >
                         🔊
