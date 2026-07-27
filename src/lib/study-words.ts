@@ -33,78 +33,17 @@ function extractDeckTitle(row: Record<string, unknown>): string | null {
   return null;
 }
 
-function coalesceString(...values: unknown[]): string {
-  for (const value of values) {
-    if (value == null) continue;
-    const text = String(value).trim();
-    if (text) return text;
-  }
-  return "";
-}
-
-const CYRILLIC_PATTERN = /[\u0400-\u04FF]/;
-
-function hasCyrillic(text: string): boolean {
-  return CYRILLIC_PATTERN.test(text);
-}
-
-/** Returns [dutch, ukrainian] for StudyWord.word / StudyWord.translation */
-function fixNlUkWordPair(dutch: string, ukrainian: string): [string, string] {
-  if (dutch && ukrainian && hasCyrillic(dutch) && !hasCyrillic(ukrainian)) {
-    return [ukrainian, dutch];
-  }
-  if (!dutch && ukrainian && hasCyrillic(ukrainian)) {
-    return ["", ukrainian];
-  }
-  if (dutch && !ukrainian && !hasCyrillic(dutch)) {
-    return [dutch, ""];
-  }
-  if (dutch && !ukrainian && hasCyrillic(dutch)) {
-    return ["", dutch];
-  }
-  return [dutch, ukrainian];
-}
-
-/** Returns [ukrainian, dutch] for StudyWord.example_translation / example_word */
-function fixNlUkExamplePair(
-  ukrainian: string,
-  dutch: string,
-): [string, string] {
-  if (
-    ukrainian &&
-    dutch &&
-    !hasCyrillic(ukrainian) &&
-    hasCyrillic(dutch)
-  ) {
-    return [dutch, ukrainian];
-  }
-  if (ukrainian && !hasCyrillic(ukrainian)) {
-    return ["", dutch || ukrainian];
-  }
-  return [ukrainian, dutch];
-}
-
 export function normalizeStudyWord(row: Record<string, unknown>): StudyWord {
-  const [word, translation] = fixNlUkWordPair(
-    coalesceString(row.word, row.term),
-    coalesceString(row.translation),
-  );
-
-  const [example_translation, example_word] = fixNlUkExamplePair(
-    coalesceString(row.example_translation, row.example_uk, row.example_term),
-    coalesceString(row.example_word, row.example_nl),
-  );
-
   return {
     id: String(row.id),
     deck_id: String(row.deck_id),
-    word,
-    translation,
+    word: String(row.word ?? ""),
+    translation: String(row.translation ?? ""),
     sort_order:
       typeof row.sort_order === "number" ? row.sort_order : undefined,
-    phonetic: optionalString(row.phonetic ?? row.translit),
-    example_word: optionalString(example_word),
-    example_translation: optionalString(example_translation),
+    phonetic: optionalString(row.phonetic),
+    example_word: optionalString(row.example_word),
+    example_translation: optionalString(row.example_translation),
     category: optionalString(row.category),
     emoji: optionalString(row.emoji),
     deckTitle: extractDeckTitle(row) ?? optionalString(row.category),
