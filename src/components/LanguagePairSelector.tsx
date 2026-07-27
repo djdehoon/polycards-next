@@ -28,6 +28,7 @@ export function LanguagePairSelector({
 
     startTransition(() => {
       void setLanguagePair(parsed.code).then(() => {
+        router.push("/dashboard");
         router.refresh();
       });
     });

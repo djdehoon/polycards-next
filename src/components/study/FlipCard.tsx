@@ -276,13 +276,18 @@ function SpeakButton({
 function ExampleBar({
   children,
   className = "mt-5",
+  variant = "secondary",
 }: {
   children: ReactNode;
   className?: string;
+  variant?: "primary" | "secondary";
 }) {
+  const textSize =
+    variant === "primary" ? "text-xl sm:text-2xl" : "text-base sm:text-lg";
+
   return (
     <div
-      className={`${className} w-full rounded-lg bg-zinc-800/80 px-4 py-3 text-center text-sm text-zinc-300 sm:text-base`}
+      className={`${className} w-full rounded-lg bg-zinc-800/80 px-4 py-3 text-center ${textSize} text-zinc-300`}
     >
       {children}
     </div>
@@ -448,19 +453,19 @@ export function FlipCard({
           <CategoryHeader />
 
           {frontContent.mainWord ? (
-            <p className="mt-4 text-center text-3xl font-bold text-white sm:text-4xl">
+            <p className="mt-4 text-center text-4xl font-bold text-white sm:text-6xl">
               {frontContent.mainWord}
             </p>
           ) : null}
 
           {frontContent.showPhonetic && formattedPhonetic ? (
-            <p className="mt-2 text-center text-sm italic text-zinc-500">
+            <p className="mt-2 text-center text-lg italic text-zinc-500 sm:text-xl">
               {formattedPhonetic}
             </p>
           ) : null}
 
           {frontContent.exampleSentence.trim() ? (
-            <ExampleBar>
+            <ExampleBar variant="primary">
               {boldWordInSentence(
                 frontContent.exampleSentence,
                 frontContent.boldTarget,
@@ -469,7 +474,7 @@ export function FlipCard({
           ) : null}
           {example_translation2 &&
             faceShowsExampleTranslation(direction, "front") && (
-            <ExampleBar className="mt-2">
+            <ExampleBar className="mt-2" variant="secondary">
               {boldWordInSentence(
                 example_translation2,
                 exampleTranslation2BoldTarget(
@@ -548,20 +553,19 @@ export function FlipCard({
           ) : null}
 
           {backContent.mainWord ? (
-            <p className="mt-4 text-center text-3xl font-bold text-green-400 sm:text-4xl">
-              
+            <p className="mt-4 text-center text-4xl font-bold text-green-400 sm:text-5xl">
               {backContent.mainWord}
             </p>
           ) : null}
 
           {backContent.showPhonetic && formattedPhonetic ? (
-            <p className="mt-2 text-center text-sm italic text-zinc-500">
+            <p className="mt-2 text-center text-lg italic text-zinc-500 sm:text-xl">
               {formattedPhonetic}
             </p>
           ) : null}
 
           {backContent.exampleSentence.trim() ? (
-            <ExampleBar>
+            <ExampleBar variant="primary">
               {boldWordInSentence(
                 backContent.exampleSentence,
                 backContent.boldTarget,
@@ -570,7 +574,7 @@ export function FlipCard({
           ) : null}
           {example_translation2 &&
             faceShowsExampleTranslation(direction, "back") && (
-            <ExampleBar className="mt-2">
+            <ExampleBar className="mt-2" variant="secondary">
               {boldWordInSentence(
                 example_translation2,
                 exampleTranslation2BoldTarget(
