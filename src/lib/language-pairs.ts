@@ -1,6 +1,6 @@
 import type { SpeechLanguage } from "@/lib/audio";
 
-export const LANGUAGE_PAIR_CODES = ["nl-uk", "nl-zh"] as const;
+export const LANGUAGE_PAIR_CODES = ["nl-uk", "nl-zh", "en-es"] as const;
 export type LanguagePairCode = (typeof LANGUAGE_PAIR_CODES)[number];
 
 export const DEFAULT_LANGUAGE_PAIR: LanguagePairCode = "nl-uk";
@@ -31,6 +31,13 @@ export const FALLBACK_LANGUAGE_PAIRS: LanguagePair[] = [
     flag_emoji: "🇨🇳",
     sort_order: 1,
   },
+  {
+    code: "en-es",
+    source_language: "English",
+    target_language: "Spanish",
+    flag_emoji: "🇪🇸",
+    sort_order: 2,
+  },
 ];
 
 export type LanguagePairMeta = {
@@ -56,12 +63,19 @@ const PAIR_META: Record<LanguagePairCode, LanguagePairMeta> = {
     directionToNl: "ZH → NL",
     directionFromNl: "NL → ZH",
   },
+  "en-es": {
+    targetSpeechLang: "es-ES",
+    targetShort: "ES",
+    targetLabel: "Spanish",
+    directionToNl: "ES → EN",
+    directionFromNl: "EN → ES",
+  },
 };
 
 export function parseLanguagePairCode(
   value: string | null | undefined,
 ): LanguagePairCode | null {
-  if (value === "nl-uk" || value === "nl-zh") return value;
+  if (value === "nl-uk" || value === "nl-zh" || value === "en-es") return value;
   return null;
 }
 

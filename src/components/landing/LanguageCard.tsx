@@ -1,8 +1,15 @@
 "use client";
 
+import { setLanguagePair } from "@/app/actions/language-pair";
 import type { ChooseLanguageDisplay, ChooseLanguageLink } from "@/lib/languages";
+import {
+  LANGUAGE_PAIR_STORAGE_KEY,
+  parseLanguagePairCode,
+} from "@/lib/language-pairs";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition, type MouseEvent } from "react";
 import { LanguageFlagSvg } from "./LanguageFlagSvgs";
 
 const blueGlow =
@@ -31,6 +38,8 @@ type Props = {
 
 export function LanguageCard({ id, label, index, display, chooseLink }: Props) {
   const reduce = useReducedMotion();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const isLive = display.status === "live";
 
   const badge = (
@@ -84,7 +93,22 @@ export function LanguageCard({ id, label, index, display, chooseLink }: Props) {
     return null;
   }
 
-  const { href, target, buttonText, useNextLink } = chooseLink;
+  const { href, target, buttonText, useNextLink, languagePair } = chooseLink;
+
+  function persistPairAndGo(e: MouseEvent<HTMLAnchorElement>) {
+    const pair = parseLanguagePairCode(languagePair);
+    if (!pair || !useNextLink) return;
+
+    e.preventDefault();
+    if (pending) return;
+
+    localStorage.setItem(LANGUAGE_PAIR_STORAGE_KEY, pair);
+    startTransition(() => {
+      void setLanguagePair(pair).then(() => {
+        router.push(href);
+      });
+    });
+  }
 
   const body = (
     <>
@@ -100,7 +124,7 @@ export function LanguageCard({ id, label, index, display, chooseLink }: Props) {
       {badge}
       <p className="mt-2 text-xs text-[#a0a0a0] sm:text-sm">{display.statsLine}</p>
       <span className={ctaLiveClassName}>
-        {buttonText}
+        {pending ? "…" : buttonText}
         <span aria-hidden className="ml-1">
           →
         </span>
@@ -140,7 +164,12 @@ export function LanguageCard({ id, label, index, display, chooseLink }: Props) {
         </div>
       ) : null}
       {useNextLink ? (
-        <Link href={href} className={linkClassName}>
+        <Link
+          href={href}
+          className={linkClassName}
+          onClick={languagePair ? persistPairAndGo : undefined}
+          aria-disabled={pending}
+        >
           {body}
         </Link>
       ) : (

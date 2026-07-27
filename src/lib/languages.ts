@@ -1,3 +1,5 @@
+import type { LanguagePairCode } from "@/lib/language-pairs";
+
 export type LandingDeck = {
   slug: string;
   title: string;
@@ -10,6 +12,8 @@ export type ChooseLanguageLink = {
   buttonText: string;
   /** `true`: `next/link` (in-app routes). `false`: `<a>` for `/languages/...`, static files, or external URLs. */
   useNextLink: boolean;
+  /** When set, clicking the card stores this language pair before navigating. */
+  languagePair?: LanguagePairCode;
 };
 
 /** Rich card copy for the marketing "Choose Language" grid. */
@@ -45,26 +49,28 @@ export type ChooseLanguageGridRow = {
   displayOverride?: ChooseLanguageDisplay;
 };
 
-/** New V2 Apps: Next.js Ukrainian, Spanish, Chinese (login / WIP). */
+/** New V2 Apps: Next.js Ukrainian, Spanish, Chinese (login). */
 export const CHOOSE_LANGUAGE_V2_GRID_ROWS: ChooseLanguageGridRow[] = [
   {
     rowKey: "ukrainian-v2",
     languageId: "ukrainian",
     linkOverride: {
-      href: "/login",
+      href: "/login?pair=nl-uk",
       target: "_self",
       buttonText: "Log In",
       useNextLink: true,
+      languagePair: "nl-uk",
     },
   },
   {
     rowKey: "spanish-v2",
     languageId: "spanish",
     linkOverride: {
-      href: "/login",
+      href: "/login?pair=en-es",
       target: "_self",
-      buttonText: "Work in Progress",
+      buttonText: "Log In",
       useNextLink: true,
+      languagePair: "en-es",
     },
     displayOverride: {
       subtitle: "English ↔ Español",
@@ -76,10 +82,11 @@ export const CHOOSE_LANGUAGE_V2_GRID_ROWS: ChooseLanguageGridRow[] = [
     rowKey: "chinese-v2",
     languageId: "chinese",
     linkOverride: {
-      href: "/login",
+      href: "/login?pair=nl-zh",
       target: "_self",
       buttonText: "Log In",
       useNextLink: true,
+      languagePair: "nl-zh",
     },
     displayOverride: {
       subtitle: "Nederlands ↔ 中文",

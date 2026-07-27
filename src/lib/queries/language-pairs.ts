@@ -37,7 +37,16 @@ export async function fetchLanguagePairs(
     })
     .filter((row): row is LanguagePair => row !== null);
 
-  return parsed.length > 0 ? parsed : FALLBACK_LANGUAGE_PAIRS;
+  if (parsed.length === 0) {
+    return FALLBACK_LANGUAGE_PAIRS;
+  }
+
+  const present = new Set(parsed.map((p) => p.code));
+  const merged = [
+    ...parsed,
+    ...FALLBACK_LANGUAGE_PAIRS.filter((p) => !present.has(p.code)),
+  ];
+  return merged.sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function fetchDeckIdsForPair(
