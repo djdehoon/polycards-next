@@ -277,13 +277,18 @@ function ExampleBar({
   children,
   className = "mt-5",
   variant = "secondary",
+  zhSentence = false,
 }: {
   children: ReactNode;
   className?: string;
   variant?: "primary" | "secondary";
+  zhSentence?: boolean;
 }) {
-  const textSize =
-    variant === "primary" ? "text-xl sm:text-2xl" : "text-base sm:text-lg";
+  const textSize = zhSentence
+    ? "text-2xl zh-sentence"
+    : variant === "primary"
+      ? "text-xl sm:text-2xl"
+      : "text-base sm:text-lg";
 
   return (
     <div
@@ -320,6 +325,7 @@ export function FlipCard({
   const deckTitle = studyWord.deckTitle ?? category;
   const pairMeta = getLanguagePairMeta(languagePair);
   const isTargetNl = direction === "target-nl";
+  const isZh = languagePair === "nl-zh";
   const formattedPhonetic = formatPhonetic(phonetic);
   const displayEmoji = (studyWord.emoji ?? "").trim() || "📝";
   const displayTitle = deckTitle || category;
@@ -453,19 +459,34 @@ export function FlipCard({
           <CategoryHeader />
 
           {frontContent.mainWord ? (
-            <p className="mt-4 text-center text-4xl font-bold text-white sm:text-6xl">
+            <p
+              className={
+                isZh && frontContent.showPhonetic
+                  ? "zh-calligraphy mt-4 text-center text-7xl leading-none sm:text-9xl"
+                  : "mt-4 text-center text-4xl font-bold text-white sm:text-6xl"
+              }
+            >
               {frontContent.mainWord}
             </p>
           ) : null}
 
           {frontContent.showPhonetic && formattedPhonetic ? (
-            <p className="mt-2 text-center text-lg italic text-zinc-500 sm:text-xl">
+            <p
+              className={
+                isZh
+                  ? "mt-2 text-center text-sm italic text-zinc-500"
+                  : "mt-2 text-center text-lg italic text-zinc-500 sm:text-xl"
+              }
+            >
               {formattedPhonetic}
             </p>
           ) : null}
 
           {frontContent.exampleSentence.trim() ? (
-            <ExampleBar variant="primary">
+            <ExampleBar
+              variant="primary"
+              zhSentence={isZh && frontContent.lang === "zh-CN"}
+            >
               {boldWordInSentence(
                 frontContent.exampleSentence,
                 frontContent.boldTarget,
@@ -553,19 +574,34 @@ export function FlipCard({
           ) : null}
 
           {backContent.mainWord ? (
-            <p className="mt-4 text-center text-4xl font-bold text-green-400 sm:text-5xl">
+            <p
+              className={
+                isZh && backContent.showPhonetic
+                  ? "zh-calligraphy mt-4 text-center text-7xl leading-none sm:text-9xl"
+                  : "mt-4 text-center text-4xl font-bold text-green-400 sm:text-5xl"
+              }
+            >
               {backContent.mainWord}
             </p>
           ) : null}
 
           {backContent.showPhonetic && formattedPhonetic ? (
-            <p className="mt-2 text-center text-lg italic text-zinc-500 sm:text-xl">
+            <p
+              className={
+                isZh
+                  ? "mt-2 text-center text-sm italic text-zinc-500"
+                  : "mt-2 text-center text-lg italic text-zinc-500 sm:text-xl"
+              }
+            >
               {formattedPhonetic}
             </p>
           ) : null}
 
           {backContent.exampleSentence.trim() ? (
-            <ExampleBar variant="primary">
+            <ExampleBar
+              variant="primary"
+              zhSentence={isZh && backContent.lang === "zh-CN"}
+            >
               {boldWordInSentence(
                 backContent.exampleSentence,
                 backContent.boldTarget,

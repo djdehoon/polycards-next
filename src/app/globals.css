@@ -56,3 +56,17 @@ body {
     background-position: 50% 50%;
   }
 }
+
+/* Chinese (nl-zh) study typography */
+.zh-calligraphy {
+  font-family: var(--font-ma-shan-zheng), "Noto Sans SC", serif;
+  background: linear-gradient(135deg, #f0f0f0 0%, #fbbf24 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 400;
+}
+
+.zh-sentence {
+  font-family: var(--font-noto-sans-sc), "Noto Sans SC", sans-serif;
+}

@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/react';
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Ma_Shan_Zheng, Noto_Sans_SC } from "next/font/google";
 import { PwaRegister } from "@/components/PwaRegister";
 import { APP_VERSION } from "@/lib/app-version";
 import "./globals.css";
@@ -13,6 +13,22 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const maShanZheng = Ma_Shan_Zheng({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-ma-shan-zheng",
+  display: "swap",
+  preload: false,
+});
+
+const notoSansSc = Noto_Sans_SC({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  variable: "--font-noto-sans-sc",
+  display: "swap",
+  preload: false,
 });
 
 /** Public site origin for metadataBase and OG absolute URLs (WhatsApp/Facebook need HTTPS).
@@ -116,7 +132,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${maShanZheng.variable} ${notoSansSc.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

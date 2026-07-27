@@ -54,6 +54,8 @@ export function TypeStudyCard({
   const phonetic = isTargetLanguagePrompt(direction)
     ? getPhonetic(studyWord)
     : null;
+  const isZhPrompt =
+    languagePair === "nl-zh" && isTargetLanguagePrompt(direction);
 
   const [input, setInput] = useState("");
   const [checked, setChecked] = useState(false);
@@ -116,7 +118,15 @@ export function TypeStudyCard({
               {studyWord.emoji}
             </span>
           ) : null}
-          <p className="mt-1 text-2xl font-semibold text-zinc-50">{prompt}</p>
+          <p
+            className={
+              isZhPrompt
+                ? "zh-calligraphy mt-1 text-7xl leading-none"
+                : "mt-1 text-2xl font-semibold text-zinc-50"
+            }
+          >
+            {prompt}
+          </p>
           {phonetic ? (
             <p className="mt-1 text-sm italic text-zinc-400">{phonetic}</p>
           ) : null}
