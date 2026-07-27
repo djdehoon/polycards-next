@@ -14,6 +14,7 @@ import {
   getLanguagePairMeta,
   type LanguagePairCode,
 } from "@/lib/language-pairs";
+import { ChineseStrokeOrder } from "@/components/study/ChineseStrokeOrder";
 
 export type FlipCardProps = {
   studyWord: StudyWord;
@@ -544,6 +545,10 @@ export function FlipCard({
               />
             )}
           </div>
+
+          {isZh && frontContent.showPhonetic && frontContent.mainWord.trim() ? (
+            <ChineseStrokeOrder characters={frontContent.mainWord} />
+          ) : null}
         </div>
 
         {!isFlipped ? (
@@ -659,6 +664,10 @@ export function FlipCard({
               />
             )}
           </div>
+
+          {isZh && backContent.showPhonetic && backContent.mainWord.trim() ? (
+            <ChineseStrokeOrder characters={backContent.mainWord} />
+          ) : null}
         </div>
       </div>
     );

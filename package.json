@@ -1,6 +1,6 @@
 {
   "name": "polycards",
-  "version": "0.4.2",
+  "version": "0.4.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.105.1",
     "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.38.0",
+    "hanzi-writer": "^3.7.3",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
