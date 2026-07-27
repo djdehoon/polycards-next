@@ -14,6 +14,11 @@ import {
   computeSessionStats,
   fetchUserSessionsSince,
 } from "@/lib/queries";
+import {
+  findLanguagePair,
+  getLanguagePairFromCookie,
+} from "@/lib/language-pairs";
+import { fetchDeckIdsForPair, fetchLanguagePairs } from "@/lib/queries/language-pairs";
 import { ScrollToDeck } from "./scroll-to-deck";
 
 type Deck = {
@@ -44,14 +49,29 @@ export default async function DashboardPage({
     redirect("/login");
   }
 
-  const { data: rows, error } = await supabase
-    .from("decks")
-    .select("id, slug, title, description, sort_order")
-    .order("sort_order", { ascending: true })
-    .order("title", { ascending: true })
-    .returns<Deck[]>();
+  const languagePair = await getLanguagePairFromCookie();
+  const pairs = await fetchLanguagePairs(supabase);
+  const pairInfo = findLanguagePair(pairs, languagePair);
+  const deckIdsForPair = await fetchDeckIdsForPair(supabase, languagePair);
 
-  const decks = !error && rows ? rows : [];
+  let decks: Deck[] = [];
+  let error: { message: string } | null = null;
+
+  if (deckIdsForPair.length > 0) {
+    const { data: rows, error: deckError } = await supabase
+      .from("decks")
+      .select("id, slug, title, description, sort_order")
+      .in("id", deckIdsForPair)
+      .order("sort_order", { ascending: true })
+      .order("title", { ascending: true })
+      .returns<Deck[]>();
+
+    if (deckError) {
+      error = deckError;
+    } else {
+      decks = rows ?? [];
+    }
+  }
   const showEmpty = !error && decks.length === 0;
   const focusDeck =
     focusSlug != null
@@ -65,11 +85,20 @@ export default async function DashboardPage({
   let progressByWord = new Map<string, ProgressRow>();
 
   if (deckIds.length > 0) {
-    const { data: wordRows, error: wErr } = await supabase
+    let wordQuery = supabase
       .from("words")
       .select("id, deck_id")
-      .in("deck_id", deckIds)
-      .returns<WordRow[]>();
+      .in("deck_id", deckIds);
+
+    if (languagePair === "nl-uk") {
+      wordQuery = wordQuery.or(
+        "language_pair_code.eq.nl-uk,language_pair_code.is.null",
+      );
+    } else {
+      wordQuery = wordQuery.eq("language_pair_code", languagePair);
+    }
+
+    const { data: wordRows, error: wErr } = await wordQuery.returns<WordRow[]>();
 
     if (!wErr && wordRows?.length) {
       const byDeck = new Map<string, string[]>();
@@ -161,7 +190,11 @@ export default async function DashboardPage({
         ) : null}
 
         {showEmpty ? (
-          <p className="text-sm text-zinc-400">Geen decks gevonden.</p>
+          <p className="text-sm text-zinc-400">
+            {deckIdsForPair.length === 0
+              ? `Nog geen decks voor ${pairInfo.source_language} → ${pairInfo.target_language}.`
+              : "Geen decks gevonden."}
+          </p>
         ) : null}
 
         {!error && decks.length > 0 ? (
@@ -192,7 +225,7 @@ export default async function DashboardPage({
                           {deck.title}
                         </h2>
                         <Link
-                          href={`/study?deck=${deck.id}`}
+                          href={`/study?deck=${deck.id}&pair=${languagePair}`}
                           className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-blue-500 sm:text-xs"
                         >
                           Studeren →

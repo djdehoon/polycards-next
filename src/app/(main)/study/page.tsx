@@ -23,14 +23,24 @@ import {
 } from "@/lib/srs";
 import {
   normalizeStudyWord,
+  parseStudyDirectionMode,
   resolveDirection,
+  getStudyDirectionLabels,
   STUDY_WORD_SELECT,
   type StudyDirectionMode,
   type StudyMode,
   type StudyWord,
 } from "@/lib/study-words";
+import {
+  DEFAULT_LANGUAGE_PAIR,
+  LANGUAGE_PAIR_STORAGE_KEY,
+  getStudyDirectionStorageKey,
+  parseLanguagePairCode,
+  type LanguagePairCode,
+} from "@/lib/language-pairs";
+import { setLanguagePair } from "@/app/actions/language-pair";
 
-const DIRECTION_KEY = "polycards:studyDirection";
+const LEGACY_DIRECTION_KEY = "polycards:studyDirection";
 const STUDY_MODE_KEY = "polycards:studyMode";
 
 type DueItem = {
@@ -41,45 +51,68 @@ type DueItem = {
 async function fetchWordsForDeck(
   supabase: ReturnType<typeof createBrowserSupabaseClient>,
   deckId: string,
+  pairCode: LanguagePairCode,
 ) {
-  const primary = await supabase
+  const applyPairFilter = <
+    T extends {
+      eq: (column: string, value: string) => T;
+      or: (filters: string) => T;
+    },
+  >(
+    query: T,
+  ) => {
+    if (pairCode === "nl-uk") {
+      return query.or("language_pair_code.eq.nl-uk,language_pair_code.is.null");
+    }
+    return query.eq("language_pair_code", pairCode);
+  };
+
+  let primary = supabase
     .from("words")
     .select(`
       ${STUDY_WORD_SELECT},
       decks!inner(title)
     `)
-    .eq("deck_id", deckId)
-    .order("sort_order", { ascending: true });
+    .eq("deck_id", deckId);
 
-  if (!primary.error) {
+  primary = applyPairFilter(primary);
+
+  const primaryResult = await primary.order("sort_order", { ascending: true });
+
+  if (!primaryResult.error) {
     return {
-      data: (primary.data ?? []).map((row) =>
+      data: (primaryResult.data ?? []).map((row) =>
         normalizeStudyWord(row as Record<string, unknown>),
       ),
       error: null,
     };
   }
 
-  const fallback = await supabase
+  let fallback = supabase
     .from("words")
     .select(`
       *,
       decks!inner(title)
     `)
-    .eq("deck_id", deckId)
+    .eq("deck_id", deckId);
+
+  fallback = applyPairFilter(fallback);
+
+  const fallbackResult = await fallback
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
   return {
-    data: (fallback.data ?? []).map((row) =>
+    data: (fallbackResult.data ?? []).map((row) =>
       normalizeStudyWord(row as Record<string, unknown>),
     ),
-    error: fallback.error,
+    error: fallbackResult.error,
   };
 }
 
 async function loadDueItems(
   deckId: string,
+  pairCode: LanguagePairCode,
 ): Promise<{
   items: DueItem[];
   userId: string | null;
@@ -98,6 +131,7 @@ async function loadDueItems(
   const { data: words, error: wordError } = await fetchWordsForDeck(
     supabase,
     deckId,
+    pairCode,
   );
   if (wordError) {
     return {
@@ -194,6 +228,13 @@ function StudyLoading() {
 function StudySession() {
   const searchParams = useSearchParams();
   const deckId = searchParams.get("deck");
+  const pairParam = searchParams.get("pair");
+  const pairFromUrl = parseLanguagePairCode(pairParam);
+
+  const [languagePair, setLanguagePairState] = useState<LanguagePairCode>(
+    pairFromUrl ?? DEFAULT_LANGUAGE_PAIR,
+  );
+  const directionLabels = getStudyDirectionLabels(languagePair);
 
   const [items, setItems] = useState<DueItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -205,7 +246,7 @@ function StudySession() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [directionMode, setDirectionMode] =
-    useState<StudyDirectionMode>("ua-nl");
+    useState<StudyDirectionMode>("target-nl");
   const [studyMode, setStudyMode] = useState<StudyMode>("flashcard");
   const [prefsReady, setPrefsReady] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -213,17 +254,35 @@ function StudySession() {
 
   useEffect(() => {
     startTransition(() => {
-      const rawDir = localStorage.getItem(DIRECTION_KEY);
-      if (rawDir === "ua-nl" || rawDir === "nl-ua" || rawDir === "mix") {
-        setDirectionMode(rawDir);
+      const fromUrl = parseLanguagePairCode(pairParam);
+      const fromStorage = parseLanguagePairCode(
+        localStorage.getItem(LANGUAGE_PAIR_STORAGE_KEY),
+      );
+      const resolved = fromUrl ?? fromStorage ?? DEFAULT_LANGUAGE_PAIR;
+      setLanguagePairState(resolved);
+      localStorage.setItem(LANGUAGE_PAIR_STORAGE_KEY, resolved);
+      if (fromUrl) {
+        void setLanguagePair(resolved);
       }
+
+      const directionKey = getStudyDirectionStorageKey(resolved);
+      const rawDir =
+        localStorage.getItem(directionKey) ??
+        (resolved === DEFAULT_LANGUAGE_PAIR
+          ? localStorage.getItem(LEGACY_DIRECTION_KEY)
+          : null);
+      const parsedDir = parseStudyDirectionMode(rawDir);
+      if (parsedDir) {
+        setDirectionMode(parsedDir);
+      }
+
       const rawMode = localStorage.getItem(STUDY_MODE_KEY);
       if (rawMode === "flashcard" || rawMode === "type") {
         setStudyMode(rawMode);
       }
       setPrefsReady(true);
     });
-  }, []);
+  }, [pairParam]);
 
   useEffect(() => {
     if (!deckId) {
@@ -242,7 +301,7 @@ function StudySession() {
     });
 
     void (async () => {
-      const result = await loadDueItems(deckId);
+      const result = await loadDueItems(deckId, languagePair);
       if (cancelled) return;
       if (result.unauthenticated) {
         setUnauthenticated(true);
@@ -267,14 +326,14 @@ function StudySession() {
     return () => {
       cancelled = true;
     };
-  }, [deckId]);
+  }, [deckId, languagePair]);
 
   const current = items[index];
   const cardDirection = useMemo(
     () =>
       current
         ? resolveDirection(directionMode, current.studyWord.id)
-        : "ua-nl",
+        : "target-nl",
     [current, directionMode],
   );
 
@@ -301,10 +360,13 @@ function StudySession() {
   const progressPct =
     items.length > 0 ? Math.round((index / items.length) * 100) : 0;
 
-  const persistDirection = useCallback((mode: StudyDirectionMode) => {
-    setDirectionMode(mode);
-    localStorage.setItem(DIRECTION_KEY, mode);
-  }, []);
+  const persistDirection = useCallback(
+    (mode: StudyDirectionMode) => {
+      setDirectionMode(mode);
+      localStorage.setItem(getStudyDirectionStorageKey(languagePair), mode);
+    },
+    [languagePair],
+  );
 
   const persistStudyMode = useCallback((mode: StudyMode) => {
     setStudyMode(mode);
@@ -419,7 +481,9 @@ function StudySession() {
     return shell(
       <div className="mx-auto max-w-lg flex-1 text-center">
         <p className="text-zinc-400">
-          Geen kaarten om nu te herhalen (of dit deck is leeg).
+          {languagePair === "nl-zh"
+            ? "Nog geen kaarten voor Nederlands → Chinees in dit deck."
+            : "Geen kaarten om nu te herhalen (of dit deck is leeg)."}
         </p>
         <Link
           href="/dashboard"
@@ -464,16 +528,16 @@ function StudySession() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <ModeButton
-          active={directionMode === "ua-nl"}
-          onClick={() => persistDirection("ua-nl")}
+          active={directionMode === "target-nl"}
+          onClick={() => persistDirection("target-nl")}
         >
-          UA→NL
+          {directionLabels.toNl}
         </ModeButton>
         <ModeButton
-          active={directionMode === "nl-ua"}
-          onClick={() => persistDirection("nl-ua")}
+          active={directionMode === "nl-target"}
+          onClick={() => persistDirection("nl-target")}
         >
-          NL→UA
+          {directionLabels.fromNl}
         </ModeButton>
         <ModeButton
           active={directionMode === "mix"}
@@ -504,6 +568,7 @@ function StudySession() {
             key={`${current!.studyWord.id}-${cardDirection}`}
             studyWord={current!.studyWord}
             direction={cardDirection}
+            languagePair={languagePair}
             isFlipped={isFlipped}
             onFlip={setIsFlipped}
             disabled={saving}
@@ -524,6 +589,7 @@ function StudySession() {
           key={`${current!.studyWord.id}-${cardDirection}`}
           studyWord={current!.studyWord}
           direction={cardDirection}
+          languagePair={languagePair}
           disabled={saving}
           onRevealed={() => setAnswerRevealed(true)}
         />

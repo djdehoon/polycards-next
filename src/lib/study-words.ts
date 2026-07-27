@@ -1,4 +1,7 @@
-/** Study card fields mirror Supabase `words` columns: `word` = Dutch, `translation` = Ukrainian. */
+import type { LanguagePairCode } from "@/lib/language-pairs";
+import { getLanguagePairMeta } from "@/lib/language-pairs";
+
+/** Study card fields mirror Supabase `words` columns: `word` = Dutch, `translation` = target language. */
 export type StudyWord = {
   id: string;
   deck_id: string;
@@ -14,12 +17,12 @@ export type StudyWord = {
   deckTitle?: string | null;
 };
 
-export type StudyDirection = "ua-nl" | "nl-ua";
+export type StudyDirection = "target-nl" | "nl-target";
 export type StudyDirectionMode = StudyDirection | "mix";
 export type StudyMode = "flashcard" | "type";
 
 export const STUDY_WORD_SELECT =
-  "id, deck_id, sort_order, word, translation, phonetic, example_word, example_translation, example_translation2, category, emoji";
+  "id, deck_id, sort_order, word, translation, phonetic, example_word, example_translation, example_translation2, category, emoji, language_pair_code";
 
 function optionalString(value: unknown): string | null {
   if (value == null || value === "") return null;
@@ -66,20 +69,45 @@ export function resolveDirection(
   mode: StudyDirectionMode,
   wordId: string,
 ): StudyDirection {
-  if (mode === "ua-nl" || mode === "nl-ua") return mode;
+  if (mode === "target-nl" || mode === "nl-target") return mode;
   let hash = 0;
   for (let i = 0; i < wordId.length; i += 1) {
     hash = (hash + wordId.charCodeAt(i)) % 2;
   }
-  return hash === 0 ? "ua-nl" : "nl-ua";
+  return hash === 0 ? "target-nl" : "nl-target";
 }
 
 export function compareAnswer(given: string, expected: string): boolean {
   return given.trim().toLowerCase() === expected.trim().toLowerCase();
 }
 
-export function isUkrainianPrompt(
-  direction: StudyDirection,
-): boolean {
-  return direction === "ua-nl";
+export function isTargetLanguagePrompt(direction: StudyDirection): boolean {
+  return direction === "target-nl";
+}
+
+/** @deprecated Use isTargetLanguagePrompt */
+export function isUkrainianPrompt(direction: StudyDirection): boolean {
+  return isTargetLanguagePrompt(direction);
+}
+
+export function parseStudyDirectionMode(
+  raw: string | null,
+): StudyDirectionMode | null {
+  if (raw === "target-nl" || raw === "nl-target" || raw === "mix") {
+    return raw;
+  }
+  if (raw === "ua-nl") return "target-nl";
+  if (raw === "nl-ua") return "nl-target";
+  return null;
+}
+
+export function getStudyDirectionLabels(pairCode: LanguagePairCode): {
+  toNl: string;
+  fromNl: string;
+} {
+  const meta = getLanguagePairMeta(pairCode);
+  return {
+    toNl: meta.directionToNl,
+    fromNl: meta.directionFromNl,
+  };
 }

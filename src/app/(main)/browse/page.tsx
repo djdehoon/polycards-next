@@ -3,6 +3,11 @@ import { BrowseToolbar } from "@/components/BrowseToolbar";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgressRow } from "@/lib/srs";
 import { fsrsStateLabel } from "@/lib/stats-helpers";
+import {
+  findLanguagePair,
+  getLanguagePairFromCookie,
+} from "@/lib/language-pairs";
+import { fetchDeckIdsForPair, fetchLanguagePairs } from "@/lib/queries/language-pairs";
 
 type Deck = {
   id: string;
@@ -39,14 +44,27 @@ export default async function BrowsePage({
     redirect("/login");
   }
 
-  const { data: deckRows, error: deckErr } = await supabase
-    .from("decks")
-    .select("id, title, description, sort_order")
-    .order("sort_order", { ascending: true })
-    .order("title", { ascending: true })
-    .returns<Deck[]>();
+  const languagePair = await getLanguagePairFromCookie();
+  const pairs = await fetchLanguagePairs(supabase);
+  const pairInfo = findLanguagePair(pairs, languagePair);
+  const deckIdsForPair = await fetchDeckIdsForPair(supabase, languagePair);
 
-  const decks = !deckErr && deckRows ? deckRows : [];
+  let decks: Deck[] = [];
+  let deckErr: { message: string } | null = null;
+
+  if (deckIdsForPair.length > 0) {
+    const { data: deckRows, error } = await supabase
+      .from("decks")
+      .select("id, title, description, sort_order")
+      .in("id", deckIdsForPair)
+      .order("sort_order", { ascending: true })
+      .order("title", { ascending: true })
+      .returns<Deck[]>();
+
+    deckErr = error;
+    decks = !error && deckRows ? deckRows : [];
+  }
+
   if (deckErr) {
     return (
       <div className="flex-1 px-4 py-8">
@@ -62,7 +80,10 @@ export default async function BrowsePage({
       <div className="flex-1 px-4 py-8">
         <main className="mx-auto max-w-4xl">
           <h1 className="text-2xl font-semibold text-zinc-50">Browse</h1>
-          <p className="mt-2 text-sm text-zinc-400">Geen decks beschikbaar.</p>
+          <p className="mt-2 text-sm text-zinc-400">
+            Nog geen decks voor {pairInfo.source_language} →{" "}
+            {pairInfo.target_language}.
+          </p>
         </main>
       </div>
     );
@@ -76,10 +97,20 @@ export default async function BrowsePage({
   const statusFilter = firstString(sp.status) ?? "all";
   const qRaw = (firstString(sp.q) ?? "").trim().toLowerCase();
 
-  const { data: words, error: wErr } = await supabase
+  let wordQuery = supabase
     .from("words")
     .select("id, deck_id, word, translation, sort_order")
-    .eq("deck_id", deckId)
+    .eq("deck_id", deckId);
+
+  if (languagePair === "nl-uk") {
+    wordQuery = wordQuery.or(
+      "language_pair_code.eq.nl-uk,language_pair_code.is.null",
+    );
+  } else {
+    wordQuery = wordQuery.eq("language_pair_code", languagePair);
+  }
+
+  const { data: words, error: wErr } = await wordQuery
     .order("sort_order", { ascending: true })
     .returns<WordRow[]>();
 
@@ -139,6 +170,7 @@ export default async function BrowsePage({
             key={`${deckId}-${statusFilter}-${qRaw}`}
             decks={decks}
             initialQ={qRaw}
+            languagePair={languagePair}
           />
         </div>
 

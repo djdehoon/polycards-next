@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { LanguagePairSelector } from "@/components/LanguagePairSelector";
+import {
+  findLanguagePair,
+  type LanguagePair,
+  type LanguagePairCode,
+} from "@/lib/language-pairs";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
@@ -34,12 +40,17 @@ function pageTitleFromPath(pathname: string): string | null {
 
 export default function Navigation({
   logoutSlot,
+  pairs,
+  activePair,
 }: {
   logoutSlot?: ReactNode;
+  pairs: LanguagePair[];
+  activePair: LanguagePairCode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const pageTitle = pageTitleFromPath(pathname);
+  const activePairInfo = findLanguagePair(pairs, activePair);
 
   return (
     <header className="relative sticky top-0 z-40 border-b border-zinc-800 bg-zinc-900 text-zinc-100">
@@ -50,7 +61,7 @@ export default function Navigation({
             className="shrink-0 text-lg font-semibold tracking-tight text-white"
             onClick={() => setOpen(false)}
           >
-            🇺🇦 PolyCards
+            {activePairInfo.flag_emoji} PolyCards
           </Link>
           {pageTitle ? (
             <>
@@ -68,6 +79,10 @@ export default function Navigation({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <div className="hidden md:block">
+            <LanguagePairSelector pairs={pairs} activePair={activePair} />
+          </div>
+
           <nav
             id="primary-nav"
             className={`${open ? "flex" : "hidden"} absolute left-0 right-0 top-full flex-col gap-1 border-b border-zinc-800 bg-zinc-900 px-4 py-3 md:static md:flex md:flex-row md:border-0 md:bg-transparent md:p-0`}
@@ -87,6 +102,9 @@ export default function Navigation({
                 </Link>
               );
             })}
+            <div className="pt-2 md:hidden">
+              <LanguagePairSelector pairs={pairs} activePair={activePair} />
+            </div>
           </nav>
 
           {logoutSlot}

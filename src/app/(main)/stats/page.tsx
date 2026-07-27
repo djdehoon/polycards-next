@@ -14,6 +14,8 @@ import {
   computeSessionStats,
   fetchUserSessionsSince,
 } from "@/lib/queries";
+import { getLanguagePairFromCookie } from "@/lib/language-pairs";
+import { fetchDeckIdsForPair } from "@/lib/queries/language-pairs";
 
 type Deck = {
   id: string;
@@ -35,20 +37,31 @@ export default async function StatsPage() {
 
   const now = new Date();
   const todayUtc = utcTodayString(now);
+  const languagePair = await getLanguagePairFromCookie();
+  const deckIdsForPair = await fetchDeckIdsForPair(supabase, languagePair);
 
-  const { data: decks, error: deckErr } = await supabase
-    .from("decks")
-    .select("id, title, sort_order")
-    .order("sort_order", { ascending: true })
-    .returns<Deck[]>();
+  let decks: Deck[] = [];
+  let deckErr: { message: string } | null = null;
 
-  if (deckErr || !decks?.length) {
+  if (deckIdsForPair.length > 0) {
+    const { data: deckRows, error } = await supabase
+      .from("decks")
+      .select("id, title, sort_order")
+      .in("id", deckIdsForPair)
+      .order("sort_order", { ascending: true })
+      .returns<Deck[]>();
+
+    deckErr = error;
+    decks = !error && deckRows ? deckRows : [];
+  }
+
+  if (deckErr || !decks.length) {
     return (
       <div className="flex-1 px-4 py-8">
         <main className="mx-auto max-w-4xl">
           <h1 className="text-2xl font-semibold text-zinc-50">Stats</h1>
           <p className="mt-2 text-sm text-zinc-400">
-            {deckErr ? "Kon geen decks laden." : "Geen decks."}
+            {deckErr ? "Kon geen decks laden." : "Geen decks voor deze taalcombinatie."}
           </p>
         </main>
       </div>
@@ -56,11 +69,20 @@ export default async function StatsPage() {
   }
 
   const deckIds = decks.map((d) => d.id);
-  const { data: wordRows } = await supabase
+  let wordQuery = supabase
     .from("words")
     .select("id, deck_id")
-    .in("deck_id", deckIds)
-    .returns<WordRow[]>();
+    .in("deck_id", deckIds);
+
+  if (languagePair === "nl-uk") {
+    wordQuery = wordQuery.or(
+      "language_pair_code.eq.nl-uk,language_pair_code.is.null",
+    );
+  } else {
+    wordQuery = wordQuery.eq("language_pair_code", languagePair);
+  }
+
+  const { data: wordRows } = await wordQuery.returns<WordRow[]>();
 
   const words = wordRows ?? [];
   const wordsByDeck = new Map<string, string[]>();

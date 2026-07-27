@@ -4,14 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 import {
   SPEAK_FAILED_MESSAGE,
   isSpeechSupported,
+  isSpeakAbortError,
   speakWord,
   stopSpeech,
   type SpeechLanguage,
 } from "@/lib/audio";
 import {
+  getLanguagePairMeta,
+  type LanguagePairCode,
+} from "@/lib/language-pairs";
+import {
   compareAnswer,
   getPhonetic,
-  isUkrainianPrompt,
+  isTargetLanguagePrompt,
   type StudyDirection,
   type StudyWord,
 } from "@/lib/study-words";
@@ -23,6 +28,7 @@ import {
 type TypeStudyCardProps = {
   studyWord: StudyWord;
   direction: StudyDirection;
+  languagePair: LanguagePairCode;
   disabled?: boolean;
   onRevealed?: () => void;
 };
@@ -30,16 +36,22 @@ type TypeStudyCardProps = {
 export function TypeStudyCard({
   studyWord,
   direction,
+  languagePair,
   disabled = false,
   onRevealed,
 }: TypeStudyCardProps) {
+  const pairMeta = getLanguagePairMeta(languagePair);
   const prompt =
-    direction === "ua-nl" ? studyWord.translation : studyWord.word;
-  const answer = direction === "ua-nl" ? studyWord.word : studyWord.translation;
-  const promptLang = direction === "ua-nl" ? "Oekraïens" : "Nederlands";
-  const answerLang = direction === "ua-nl" ? "Nederlands" : "Oekraïens";
-  const speechLang: SpeechLanguage = direction === "ua-nl" ? "uk-UA" : "nl-NL";
-  const phonetic = isUkrainianPrompt(direction)
+    direction === "target-nl" ? studyWord.translation : studyWord.word;
+  const answer =
+    direction === "target-nl" ? studyWord.word : studyWord.translation;
+  const promptLang =
+    direction === "target-nl" ? pairMeta.targetLabel : "Nederlands";
+  const answerLang =
+    direction === "target-nl" ? "Nederlands" : pairMeta.targetLabel;
+  const speechLang: SpeechLanguage =
+    direction === "target-nl" ? pairMeta.targetSpeechLang : "nl-NL";
+  const phonetic = isTargetLanguagePrompt(direction)
     ? getPhonetic(studyWord)
     : null;
 
@@ -77,8 +89,10 @@ export function TypeStudyCard({
     try {
       await speakWord(prompt, speechLang);
     } catch (err) {
-      console.error("[audio] speak failed:", err);
-      setSpeakError(SPEAK_FAILED_MESSAGE);
+      if (!isSpeakAbortError(err)) {
+        console.error("[audio] speak failed:", err);
+        setSpeakError(SPEAK_FAILED_MESSAGE);
+      }
     } finally {
       setSpeaking(false);
     }

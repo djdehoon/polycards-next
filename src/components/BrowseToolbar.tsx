@@ -16,9 +16,11 @@ const STATUS_OPTIONS = [
 export function BrowseToolbar({
   decks,
   initialQ,
+  languagePair,
 }: {
   decks: Deck[];
   initialQ: string;
+  languagePair: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -34,9 +36,10 @@ export function BrowseToolbar({
           params.set(k, v);
         }
       }
+      params.set("pair", languagePair);
       router.push(`/browse?${params.toString()}`);
     },
-    [router, sp],
+    [router, sp, languagePair],
   );
 
   return (

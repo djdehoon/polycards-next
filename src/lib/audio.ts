@@ -13,6 +13,29 @@ export type SpeakOptions = {
 };
 
 let currentAudio: HTMLAudioElement | null = null;
+let speakGeneration = 0;
+
+const BENIGN_SPEECH_ERRORS = new Set(["interrupted", "canceled"]);
+
+export function isBenignSpeechError(error: string): boolean {
+  return BENIGN_SPEECH_ERRORS.has(error.toLowerCase());
+}
+
+export class SpeakAbortError extends Error {
+  constructor() {
+    super("Speech aborted");
+    this.name = "SpeakAbortError";
+  }
+}
+
+export function isSpeakAbortError(err: unknown): boolean {
+  if (err instanceof SpeakAbortError) return true;
+  if (err instanceof Error) {
+    const match = err.message.match(/Speech synthesis error: (\w+)/i);
+    if (match && isBenignSpeechError(match[1])) return true;
+  }
+  return false;
+}
 
 function getSynth(): SpeechSynthesis | null {
   if (typeof window === "undefined") return null;
@@ -34,6 +57,12 @@ export function stopSpeech(): void {
     currentAudio.currentTime = 0;
     currentAudio = null;
   }
+}
+
+function waitForNextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
 }
 
 function loadVoices(synth: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
@@ -80,6 +109,7 @@ function speakWithWebSpeech(
   text: string,
   language: SpeechLanguage,
   options: SpeakOptions,
+  generation: number,
 ): Promise<void> {
   const synth = getSynth();
   if (!synth) {
@@ -89,6 +119,11 @@ function speakWithWebSpeech(
   return loadVoices(synth).then(
     (voices) =>
       new Promise<void>((resolve, reject) => {
+        if (generation !== speakGeneration) {
+          resolve();
+          return;
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         const selectedVoice = pickVoice(voices, language);
         if (selectedVoice) {
@@ -99,8 +134,22 @@ function speakWithWebSpeech(
         utterance.pitch = options.pitch ?? 1;
         utterance.volume = options.volume ?? 1;
 
-        utterance.onend = () => resolve();
+        utterance.onend = () => {
+          if (generation !== speakGeneration) {
+            resolve();
+            return;
+          }
+          resolve();
+        };
         utterance.onerror = (event) => {
+          if (generation !== speakGeneration) {
+            resolve();
+            return;
+          }
+          if (event.error && isBenignSpeechError(event.error)) {
+            resolve();
+            return;
+          }
           reject(
             new Error(
               event.error
@@ -130,6 +179,7 @@ async function speakWithGoogleTts(
   text: string,
   language: SpeechLanguage,
   options: SpeakOptions,
+  generation: number,
 ): Promise<void> {
   const response = await fetch("/api/tts", {
     method: "POST",
@@ -141,6 +191,10 @@ async function speakWithGoogleTts(
       pitch: options.pitch,
     }),
   });
+
+  if (generation !== speakGeneration) {
+    return;
+  }
 
   if (!response.ok) {
     let detail = `TTS API error: ${response.status}`;
@@ -164,26 +218,46 @@ async function speakWithGoogleTts(
   }
 
   const data = (await response.json()) as { audio?: string };
+  if (generation !== speakGeneration) {
+    return;
+  }
   if (!data.audio) {
     throw new Error("TTS API returned no audio");
   }
 
   return new Promise<void>((resolve, reject) => {
+    if (generation !== speakGeneration) {
+      resolve();
+      return;
+    }
+
     const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
     currentAudio = audio;
     audio.volume = options.volume ?? 1;
 
     audio.onended = () => {
       if (currentAudio === audio) currentAudio = null;
+      if (generation !== speakGeneration) {
+        resolve();
+        return;
+      }
       resolve();
     };
     audio.onerror = () => {
       if (currentAudio === audio) currentAudio = null;
+      if (generation !== speakGeneration) {
+        resolve();
+        return;
+      }
       reject(new Error("Failed to play audio"));
     };
 
     void audio.play().catch((err: unknown) => {
       if (currentAudio === audio) currentAudio = null;
+      if (generation !== speakGeneration) {
+        resolve();
+        return;
+      }
       reject(err instanceof Error ? err : new Error("Failed to play audio"));
     });
   });
@@ -199,18 +273,30 @@ export async function speakWord(
     throw new SpeakError("Cannot speak empty text");
   }
 
+  const generation = ++speakGeneration;
   stopSpeech();
+  await waitForNextFrame();
+
+  if (generation !== speakGeneration) {
+    return;
+  }
 
   try {
-    await speakWithGoogleTts(trimmed, language, options);
+    await speakWithGoogleTts(trimmed, language, options, generation);
   } catch (error) {
+    if (generation !== speakGeneration) {
+      return;
+    }
     console.warn(
       "[audio] Google TTS unavailable, falling back to Web Speech:",
       error,
     );
     try {
-      await speakWithWebSpeech(trimmed, language, options);
+      await speakWithWebSpeech(trimmed, language, options, generation);
     } catch (fallbackError) {
+      if (generation !== speakGeneration || isSpeakAbortError(fallbackError)) {
+        return;
+      }
       console.error("[audio] Web Speech fallback failed:", fallbackError);
       throw new SpeakError(SPEAK_FAILED_MESSAGE);
     }

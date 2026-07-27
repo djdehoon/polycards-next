@@ -4,15 +4,21 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   SPEAK_FAILED_MESSAGE,
   isSpeechSupported,
+  isSpeakAbortError,
   speakWord,
   stopSpeech,
   type SpeechLanguage,
 } from "@/lib/audio";
 import type { StudyDirection, StudyWord } from "@/lib/study-words";
+import {
+  getLanguagePairMeta,
+  type LanguagePairCode,
+} from "@/lib/language-pairs";
 
 export type FlipCardProps = {
   studyWord: StudyWord;
   direction: StudyDirection;
+  languagePair: LanguagePairCode;
   isFlipped?: boolean;
   onFlip?: (flipped: boolean) => void;
   disabled?: boolean;
@@ -78,11 +84,29 @@ function stripTrailingPunctuation(token: string): string {
   return token.replace(/[.,!?;:…]+$/u, "");
 }
 
-/** Bold target for transliteration line: same word index as highlighted in primary sentence. */
+function normalizePhonetic(raw: string): string {
+  return raw.trim().replace(/^\[|\]$/g, "").trim();
+}
+
+function tokensMatchBoldTarget(token: string, boldTarget: string): boolean {
+  const normalizedToken = stripTrailingPunctuation(token);
+  return (
+    normalizedToken.localeCompare(boldTarget, undefined, {
+      sensitivity: "accent",
+    }) === 0
+  );
+}
+
+function primarySentenceHasSpaces(primarySentence: string): boolean {
+  return /\s/u.test(primarySentence.trim());
+}
+
+/** Bold target for transliteration line: phonetic match or same word index as primary sentence. */
 function exampleTranslation2BoldTarget(
   primarySentence: string,
   secondarySentence: string,
   boldTarget: string,
+  phonetic?: string | null,
 ): string {
   const secondaryWords = secondarySentence
     .trim()
@@ -98,21 +122,34 @@ function exampleTranslation2BoldTarget(
     if (directPattern.test(secondarySentence)) return boldTarget;
   }
 
+  const normalizedPhonetic = phonetic ? normalizePhonetic(phonetic) : "";
+  if (normalizedPhonetic) {
+    const phoneticPattern = new RegExp(
+      normalizedPhonetic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i",
+    );
+    if (phoneticPattern.test(secondarySentence)) return normalizedPhonetic;
+  }
+
+  if (!primarySentenceHasSpaces(primarySentence)) {
+    return "";
+  }
+
   if (!primarySentence.trim() || !boldTarget.trim()) {
     return stripTrailingPunctuation(secondaryWords[0]);
   }
 
   const primaryWords = primarySentence.trim().split(/\s+/).filter(Boolean);
-  const targetPattern = new RegExp(
-    boldTarget.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-    "i",
-  );
 
   let matchWordIndex = primaryWords.findIndex((token) =>
-    targetPattern.test(stripTrailingPunctuation(token)),
+    tokensMatchBoldTarget(token, boldTarget),
   );
 
   if (matchWordIndex < 0) {
+    const targetPattern = new RegExp(
+      boldTarget.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i",
+    );
     const match = primarySentence.match(targetPattern);
     if (match?.index !== undefined) {
       const before = primarySentence.slice(0, match.index).trim();
@@ -124,15 +161,84 @@ function exampleTranslation2BoldTarget(
     return stripTrailingPunctuation(secondaryWords[matchWordIndex]);
   }
 
-  return stripTrailingPunctuation(secondaryWords[0]);
+  return "";
 }
 
 function faceShowsExampleTranslation(
   direction: StudyDirection,
   side: "front" | "back",
 ): boolean {
-  const isUaNl = direction === "ua-nl";
-  return side === "front" ? isUaNl : !isUaNl;
+  const isTargetNl = direction === "target-nl";
+  return side === "front" ? isTargetNl : !isTargetNl;
+}
+
+function buildFaceContent(
+  direction: StudyDirection,
+  side: "front" | "back",
+  word: string,
+  translation: string,
+  example_word: string,
+  example_translation: string,
+  targetSpeechLang: SpeechLanguage,
+  emoji?: string,
+): FaceContent {
+  const isTargetNl = direction === "target-nl";
+
+  if (side === "front") {
+    if (isTargetNl) {
+      const exampleSentence =
+        example_translation ||
+        swapWordInSentence(example_word, word, translation) ||
+        example_word;
+      return {
+        mainWord: translation,
+        secondaryWord: word,
+        exampleSentence,
+        boldTarget: translation,
+        speechText: example_translation || translation,
+        lang: targetSpeechLang,
+        showPhonetic: true,
+      };
+    }
+
+    const exampleSentence =
+      example_word ||
+      swapWordInSentence(example_translation, translation, word) ||
+      example_translation;
+    return {
+      mainWord: word,
+      secondaryWord: translation,
+      exampleSentence,
+      boldTarget: word,
+      speechText: example_word || word,
+      lang: "nl-NL",
+      showPhonetic: false,
+    };
+  }
+
+  if (isTargetNl) {
+    return {
+      mainWord: word,
+      secondaryWord: "",
+      exampleSentence: example_word,
+      boldTarget: word,
+      speechText: example_word || word,
+      lang: "nl-NL",
+      showPhonetic: false,
+      emoji,
+    };
+  }
+
+  return {
+    mainWord: translation,
+    secondaryWord: "",
+    exampleSentence: example_translation,
+    boldTarget: translation,
+    speechText: example_translation || translation,
+    lang: targetSpeechLang,
+    showPhonetic: true,
+    emoji,
+  };
 }
 
 function SpeakButton({
@@ -183,77 +289,10 @@ function ExampleBar({
   );
 }
 
-function buildFaceContent(
-  direction: StudyDirection,
-  side: "front" | "back",
-  word: string,
-  translation: string,
-  example_word: string,
-  example_translation: string,
-  emoji?: string,
-): FaceContent {
-  const isUaNl = direction === "ua-nl";
-
-  if (side === "front") {
-    if (isUaNl) {
-      const exampleSentence =
-        example_translation ||
-        swapWordInSentence(example_word, word, translation) ||
-        example_word;
-      return {
-        mainWord: translation,
-        secondaryWord: word,
-        exampleSentence,
-        boldTarget: translation,
-        speechText: example_translation || translation,
-        lang: "uk-UA",
-        showPhonetic: true,
-      };
-    }
-
-    const exampleSentence =
-      example_word ||
-      swapWordInSentence(example_translation, translation, word) ||
-      example_translation;
-    return {
-      mainWord: word,
-      secondaryWord: translation,
-      exampleSentence,
-      boldTarget: word,
-      speechText: example_word || word,
-      lang: "nl-NL",
-      showPhonetic: false,
-    };
-  }
-
-  if (isUaNl) {
-    return {
-      mainWord: word,
-      secondaryWord: "",
-      exampleSentence: example_word,
-      boldTarget: word,
-      speechText: example_word || word,
-      lang: "nl-NL",
-      showPhonetic: false,
-      emoji,
-    };
-  }
-
-  return {
-    mainWord: translation,
-    secondaryWord: "",
-    exampleSentence: example_translation,
-    boldTarget: translation,
-    speechText: example_translation || translation,
-    lang: "uk-UA",
-    showPhonetic: true,
-    emoji,
-  };
-}
-
 export function FlipCard({
   studyWord,
   direction,
+  languagePair,
   isFlipped: isFlippedProp,
   onFlip,
   disabled = false,
@@ -274,7 +313,8 @@ export function FlipCard({
   const phonetic = studyWord.phonetic ?? "";
   const category = studyWord.category ?? "";
   const deckTitle = studyWord.deckTitle ?? category;
-  const isUaNl = direction === "ua-nl";
+  const pairMeta = getLanguagePairMeta(languagePair);
+  const isTargetNl = direction === "target-nl";
   const formattedPhonetic = formatPhonetic(phonetic);
   const displayEmoji = (studyWord.emoji ?? "").trim() || "📝";
   const displayTitle = deckTitle || category;
@@ -286,6 +326,7 @@ export function FlipCard({
     translation,
     example_word,
     example_translation,
+    pairMeta.targetSpeechLang,
   );
   const backContent = buildFaceContent(
     direction,
@@ -294,6 +335,7 @@ export function FlipCard({
     translation,
     example_word,
     example_translation,
+    pairMeta.targetSpeechLang,
     displayEmoji,
   );
 
@@ -355,8 +397,10 @@ export function FlipCard({
       try {
         await speakWord(text, language, { rate: 0.8, pitch: 1.0 });
       } catch (err) {
-        console.error("[audio] speak failed:", err);
-        setSpeakError(SPEAK_FAILED_MESSAGE);
+        if (!isSpeakAbortError(err)) {
+          console.error("[audio] speak failed:", err);
+          setSpeakError(SPEAK_FAILED_MESSAGE);
+        }
       } finally {
         setIsSpeaking(null);
       }
@@ -364,8 +408,12 @@ export function FlipCard({
     [disabled, isSpeaking, speechAvailable],
   );
 
-  const directionLabel = isUaNl ? "UA → NL" : "NL → UA";
-  const answerLabel = isUaNl ? "NL VERTALING" : "UA VERTALING";
+  const directionLabel = isTargetNl
+    ? pairMeta.directionToNl
+    : pairMeta.directionFromNl;
+  const answerLabel = isTargetNl
+    ? "NL VERTALING"
+    : `${pairMeta.targetShort} VERTALING`;
 
   function DirectionBadge({ className = "" }: { className?: string }) {
     return (
@@ -428,6 +476,7 @@ export function FlipCard({
                   frontContent.exampleSentence,
                   example_translation2,
                   frontContent.boldTarget,
+                  phonetic,
                 ),
               )}
             </ExampleBar>
@@ -528,6 +577,7 @@ export function FlipCard({
                   backContent.exampleSentence,
                   example_translation2,
                   backContent.boldTarget,
+                  phonetic,
                 ),
               )}
             </ExampleBar>
@@ -584,7 +634,7 @@ export function FlipCard({
         aria-disabled={disabled}
         aria-label={isFlipped ? "Toon voorkant" : "Toon achterkant"}
         className={`relative min-h-72 w-full cursor-pointer rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-          isUaNl ? "ring-1 ring-blue-500/40" : "ring-1 ring-amber-500/40"
+          isTargetNl ? "ring-1 ring-blue-500/40" : "ring-1 ring-amber-500/40"
         } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
         data-direction={direction}
       >
