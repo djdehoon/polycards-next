@@ -36,6 +36,22 @@ function segmentDisplay(segment: SegmentResult) {
   };
 }
 
+function segmentUnderlineClass(segment: SegmentResult): string {
+  if (!segment.isKnown) {
+    return "border-b-2 border-red-500 text-zinc-400";
+  }
+  if (Array.from(segment.text).length >= 2) {
+    return "border-b-2 border-amber-400 text-amber-100";
+  }
+  return "border-b-2 border-emerald-500 text-zinc-100";
+}
+
+function segmentWordClass(segment: SegmentResult): string {
+  if (!segment.isKnown) return "text-red-400";
+  if (Array.from(segment.text).length >= 2) return "text-amber-200";
+  return "text-zinc-100";
+}
+
 export function SentenceAnalysis({
   chineseSentence,
   languagePairCode,
@@ -151,7 +167,7 @@ export function SentenceAnalysis({
       </button>
 
       {isExpanded ? (
-        <div className="analysis-panel-enter mt-2 rounded-lg border border-zinc-600 bg-zinc-800 p-2.5">
+        <div className="analysis-panel-enter mt-2 max-h-80 overflow-y-auto rounded-lg border border-zinc-600 bg-zinc-800 p-2.5 sm:max-h-96">
           {isLoading ? (
             <p className="text-center text-sm italic text-zinc-400">
               Analyseren...
@@ -173,11 +189,7 @@ export function SentenceAnalysis({
                     {segments.map((segment, index) => (
                       <span
                         key={`${segment.text}-${index}`}
-                        className={`zh-sentence text-lg ${
-                          segment.isKnown
-                            ? "border-b-2 border-emerald-500 text-zinc-100"
-                            : "border-b-2 border-red-500 text-zinc-400"
-                        }`}
+                        className={`zh-sentence text-lg ${segmentUnderlineClass(segment)}`}
                       >
                         {segment.text}
                       </span>
@@ -186,50 +198,86 @@ export function SentenceAnalysis({
                   <div className="flex flex-col gap-1.5">
                     {segments.map((segment, index) => {
                       const word = segmentDisplay(segment);
+                      const showBreakdown =
+                        Boolean(segment.characters) &&
+                        (segment.characters?.length ?? 0) >= 2;
+
                       return (
                         <div
                           key={`${word.word}-${index}`}
-                          className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md bg-zinc-900 px-2.5 py-1.5 transition-colors hover:bg-zinc-800"
+                          className="rounded-md bg-zinc-900 px-2.5 py-1.5 transition-colors hover:bg-zinc-800"
                         >
-                          <div className="flex min-w-[4.5rem] items-baseline gap-1.5">
-                            <span
-                              className={`zh-sentence text-xl font-semibold leading-none ${
-                                segment.isKnown ? "text-zinc-100" : "text-red-400"
-                              }`}
+                          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+                            <div className="flex min-w-[4.5rem] items-baseline gap-1.5">
+                              <span
+                                className={`zh-sentence text-xl font-semibold leading-none ${segmentWordClass(segment)}`}
+                              >
+                                {word.word}
+                              </span>
+                              <span className="text-xs italic text-zinc-400">
+                                ({word.phonetic || "?"})
+                              </span>
+                            </div>
+
+                            <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                              <span className="text-sm font-medium text-zinc-200">
+                                {word.meaning_nl}
+                              </span>
+                              <span className="text-zinc-600">·</span>
+                              <span className="text-xs text-emerald-400/90">
+                                {word.word_type}
+                              </span>
+                              {word.proficiency_level ? (
+                                <>
+                                  <span className="text-zinc-600">·</span>
+                                  <span className="text-xs text-zinc-400">
+                                    {word.proficiency_level}
+                                  </span>
+                                </>
+                              ) : null}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => handleAudioClick(e, word.word)}
+                              className="flex h-8 w-8 items-center justify-center rounded border border-zinc-600 bg-zinc-800 text-sm transition-all hover:border-emerald-500 hover:bg-emerald-600"
+                              title="Luister uitspraak"
                             >
-                              {word.word}
-                            </span>
-                            <span className="text-xs italic text-zinc-400">
-                              ({word.phonetic || "?"})
-                            </span>
+                              🔊
+                            </button>
                           </div>
 
-                          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                            <span className="text-sm font-medium text-zinc-200">
-                              {word.meaning_nl}
-                            </span>
-                            <span className="text-zinc-600">·</span>
-                            <span className="text-xs text-emerald-400/90">
-                              {word.word_type}
-                            </span>
-                            {word.proficiency_level ? (
-                              <>
-                                <span className="text-zinc-600">·</span>
-                                <span className="text-xs text-zinc-400">
-                                  {word.proficiency_level}
-                                </span>
-                              </>
-                            ) : null}
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={(e) => handleAudioClick(e, word.word)}
-                            className="flex h-8 w-8 items-center justify-center rounded border border-zinc-600 bg-zinc-800 text-sm transition-all hover:border-emerald-500 hover:bg-emerald-600"
-                            title="Luister uitspraak"
-                          >
-                            🔊
-                          </button>
+                          {showBreakdown ? (
+                            <>
+                              <hr className="my-2 border-zinc-700" />
+                              <p className="mb-1.5 text-xs font-semibold text-zinc-300">
+                                📖 Karakters:
+                              </p>
+                              <ul className="flex flex-col gap-1 text-xs text-zinc-400">
+                                {segment.characters!.map((item, i) => (
+                                  <li
+                                    key={`${item.char}-${i}`}
+                                    className="flex flex-wrap items-baseline gap-x-1.5"
+                                  >
+                                    <span className="zh-sentence text-sm font-semibold text-zinc-200">
+                                      {item.char}
+                                    </span>
+                                    <span className="italic">
+                                      {item.entry?.phonetic || "?"}
+                                    </span>
+                                    <span className="text-zinc-600">·</span>
+                                    <span>
+                                      {item.entry?.meaning_nl || "Onbekend"}
+                                    </span>
+                                    <span className="text-zinc-600">·</span>
+                                    <span>
+                                      {item.entry?.proficiency_level || "—"}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : null}
                         </div>
                       );
                     })}

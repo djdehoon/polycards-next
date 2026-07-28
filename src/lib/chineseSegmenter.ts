@@ -113,9 +113,27 @@ export function segmentChinese(
   return results;
 }
 
+export function parseHskLevel(level: string | null | undefined): 1 | 2 | 3 | null {
+  if (!level) return null;
+  const match = level.trim().match(/hsk\s*([123])/i);
+  if (!match) return null;
+  return Number(match[1]) as 1 | 2 | 3;
+}
+
 export function getAnalysisStats(segments: SegmentResult[]) {
   const known = segments.filter((s) => s.isKnown);
   const unknown = segments.filter((s) => !s.isKnown);
+
+  let hsk1 = 0;
+  let hsk2 = 0;
+  let hsk3 = 0;
+  for (const segment of known) {
+    const level = parseHskLevel(segment.entry?.proficiency_level);
+    if (level === 1) hsk1 += 1;
+    else if (level === 2) hsk2 += 1;
+    else if (level === 3) hsk3 += 1;
+  }
+
   return {
     total: segments.length,
     known: known.length,
@@ -125,10 +143,6 @@ export function getAnalysisStats(segments: SegmentResult[]) {
         ? Math.round((known.length / segments.length) * 100)
         : 0,
     unknownWords: unknown.map((s) => s.text),
-    hskBreakdown: {
-      hsk1: known.filter((s) => s.entry?.proficiency_level === "HSK 1").length,
-      hsk2: known.filter((s) => s.entry?.proficiency_level === "HSK 2").length,
-      hsk3: known.filter((s) => s.entry?.proficiency_level === "HSK 3").length,
-    },
+    hskBreakdown: { hsk1, hsk2, hsk3 },
   };
 }
