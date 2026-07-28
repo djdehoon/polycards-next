@@ -26,7 +26,8 @@ export function ChineseAnalyzer() {
         Chinese zin analyseren
       </h2>
       <p className="mt-1 text-sm text-zinc-400">
-        Longest Match First — segmenteert op basis van de dictionary.
+        Greedy longest-match (max 4 karakters) via dictionary.word — bv. 自行车
+        als één phrase i.p.v. 自+行+车.
       </p>
 
       <textarea

@@ -5,20 +5,11 @@ import {
   buildDictionaryMap,
   getAnalysisStats,
   segmentChinese,
-  type DictionaryEntry,
   type SegmentResult,
 } from "@/lib/chineseSegmenter";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { fetchDictionaryEntries } from "@/lib/fetchDictionary";
 import { hasWordAnalysis } from "@/config/features";
 import { isSpeakAbortError, speakWord } from "@/lib/audio";
-
-type DictionaryRow = {
-  word: string;
-  phonetic: string | null;
-  meaning_nl: string | null;
-  word_type: string | null;
-  proficiency_level: string | null;
-};
 
 type SentenceAnalysisProps = {
   chineseSentence: string;
@@ -30,16 +21,6 @@ type SentenceAnalysisProps = {
 
 function hasHanzi(text: string): boolean {
   return /[\u4e00-\u9fff]/u.test(text);
-}
-
-function normalizeRow(row: DictionaryRow): DictionaryEntry {
-  return {
-    word: row.word,
-    phonetic: row.phonetic?.trim() || "?",
-    meaning_nl: row.meaning_nl?.trim() || "Onbekend",
-    word_type: row.word_type?.trim() || "Onbekend",
-    proficiency_level: row.proficiency_level?.trim() || "",
-  };
 }
 
 function segmentDisplay(segment: SegmentResult) {
@@ -92,16 +73,10 @@ export function SentenceAnalysis({
           return;
         }
 
-        const supabase = createBrowserSupabaseClient();
-        const { data, error } = await supabase
-          .from("dictionary")
-          .select("word, phonetic, meaning_nl, word_type, proficiency_level")
-          .eq("language_pair_code", languagePairCode);
-
-        if (error) throw error;
+        const entries = await fetchDictionaryEntries(languagePairCode);
         if (cancelled) return;
 
-        if (!data || data.length === 0) {
+        if (entries.length === 0) {
           setLoadError(
             "Dictionary-tabel geeft 0 rijen terug (leeg of geen SELECT-rechten). Vul public.dictionary voor nl-zh en zet een SELECT-policy voor anon/authenticated.",
           );
@@ -111,9 +86,7 @@ export function SentenceAnalysis({
           return;
         }
 
-        const dictMap = buildDictionaryMap(
-          (data as DictionaryRow[]).map(normalizeRow),
-        );
+        const dictMap = buildDictionaryMap(entries);
         const result = segmentChinese(chineseSentence, dictMap);
         setSegments(result);
         setStats(getAnalysisStats(result));

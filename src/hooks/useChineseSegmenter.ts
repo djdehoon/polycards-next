@@ -5,28 +5,9 @@ import {
   buildDictionaryMap,
   getAnalysisStats,
   segmentChinese,
-  type DictionaryEntry,
   type SegmentResult,
 } from "@/lib/chineseSegmenter";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-
-type DictionaryRow = {
-  word: string;
-  phonetic: string | null;
-  meaning_nl: string | null;
-  word_type: string | null;
-  proficiency_level: string | null;
-};
-
-function normalizeEntry(row: DictionaryRow): DictionaryEntry {
-  return {
-    word: row.word,
-    phonetic: row.phonetic?.trim() || "?",
-    meaning_nl: row.meaning_nl?.trim() || "Onbekend",
-    word_type: row.word_type?.trim() || "Onbekend",
-    proficiency_level: row.proficiency_level?.trim() || "",
-  };
-}
+import { fetchDictionaryEntries } from "@/lib/fetchDictionary";
 
 export function useChineseSegmenter() {
   const [segments, setSegments] = useState<SegmentResult[]>([]);
@@ -43,15 +24,9 @@ export function useChineseSegmenter() {
     setError(null);
 
     try {
-      const supabase = createBrowserSupabaseClient();
-      const { data: entries, error: fetchError } = await supabase
-        .from("dictionary")
-        .select("word, phonetic, meaning_nl, word_type, proficiency_level")
-        .eq("language_pair_code", "nl-zh");
+      const entries = await fetchDictionaryEntries("nl-zh");
 
-      if (fetchError) throw fetchError;
-
-      if (!entries || entries.length === 0) {
+      if (entries.length === 0) {
         setSegments([]);
         setStats(null);
         setError(
@@ -60,8 +35,7 @@ export function useChineseSegmenter() {
         return;
       }
 
-      const normalized = (entries as DictionaryRow[]).map(normalizeEntry);
-      const dictMap = buildDictionaryMap(normalized);
+      const dictMap = buildDictionaryMap(entries);
       const result = segmentChinese(text, dictMap);
       setSegments(result);
       setStats(getAnalysisStats(result));

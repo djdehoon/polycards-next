@@ -12,34 +12,70 @@ export interface SegmentResult {
   isKnown: boolean;
 }
 
-const MAX_PHRASE_LENGTH = 4;
+/** Max characters for a single dictionary phrase match (greedy). */
+export const MAX_PHRASE_LENGTH = 4;
+
+const HANZI_RE = /[\u3400-\u9fff]/u;
+
+function isHanziChar(ch: string): boolean {
+  return HANZI_RE.test(ch);
+}
 
 export function buildDictionaryMap(
   entries: DictionaryEntry[],
 ): Map<string, DictionaryEntry> {
   const map = new Map<string, DictionaryEntry>();
   for (const entry of entries) {
-    map.set(entry.word, entry);
+    const key = entry.word.trim();
+    if (!key) continue;
+    map.set(key, { ...entry, word: key });
   }
   return map;
 }
 
+/** Lookup a word/phrase in the dictionary map (column `word`). */
+export function dictionaryLookup(
+  dictionaryMap: Map<string, DictionaryEntry>,
+  word: string,
+): DictionaryEntry | null {
+  return dictionaryMap.get(word) ?? null;
+}
+
+/**
+ * Greedy longest-match-first segmentation.
+ * Tries phrase length 4 → 3 → 2 → 1 before accepting an unknown character.
+ */
 export function segmentChinese(
   text: string,
   dictionaryMap: Map<string, DictionaryEntry>,
 ): SegmentResult[] {
+  const chars = Array.from(text);
   const results: SegmentResult[] = [];
   let i = 0;
 
-  while (i < text.length) {
-    let matched = false;
+  while (i < chars.length) {
+    const ch = chars[i];
 
-    for (let len = MAX_PHRASE_LENGTH; len >= 1; len--) {
-      const candidate = text.slice(i, i + len);
-      if (dictionaryMap.has(candidate)) {
+    // Keep punctuation / latin / spaces as single unknown tokens.
+    if (!isHanziChar(ch)) {
+      results.push({ text: ch, entry: null, isKnown: false });
+      i += 1;
+      continue;
+    }
+
+    let matched = false;
+    const maxLen = Math.min(MAX_PHRASE_LENGTH, chars.length - i);
+
+    for (let len = maxLen; len >= 1; len -= 1) {
+      const slice = chars.slice(i, i + len);
+      if (!slice.every(isHanziChar)) continue;
+
+      const candidate = slice.join("");
+      const entry = dictionaryLookup(dictionaryMap, candidate);
+      if (entry) {
         results.push({
           text: candidate,
-          entry: dictionaryMap.get(candidate)!,
+          entry,
           isKnown: true,
         });
         i += len;
@@ -49,8 +85,8 @@ export function segmentChinese(
     }
 
     if (!matched) {
-      results.push({ text: text[i], entry: null, isKnown: false });
-      i++;
+      results.push({ text: chars[i], entry: null, isKnown: false });
+      i += 1;
     }
   }
 
