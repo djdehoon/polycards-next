@@ -1,12 +1,13 @@
 {
   "name": "polycards",
-  "version": "0.4.19",
+  "version": "0.4.20",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:segmenter": "npx tsx scripts/assert-chinese-segmenter.ts",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "generate:og-image": "node scripts/generate-og-image.mjs",
     "compress:og-social": "node scripts/compress-og-social.mjs"

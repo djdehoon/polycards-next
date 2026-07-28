@@ -23,16 +23,28 @@ export interface SegmentResult {
 export const MAX_PHRASE_LENGTH = 4;
 
 const HANZI_RE = /[\u3400-\u9fff]/u;
-/** Zero-width / BOM / soft hyphen and similar invisibles. */
-const INVISIBLE_RE = /[\u200b-\u200d\ufeff\u00ad]/gu;
+const PUNCTUATION =
+  /[\u3000-\u303F\uFF00-\uFFEF.,;:!?(){}[\]<>""''、。，；：！？（）【】《》「」『』]/u;
 
 function isHanziChar(ch: string): boolean {
   return HANZI_RE.test(ch);
 }
 
-/** Normalize dictionary keys and lookup queries (trim, NFC, strip invisibles). */
+function isPunctuation(ch: string): boolean {
+  return PUNCTUATION.test(ch);
+}
+
+/**
+ * Normalize Chinese text for consistent dictionary lookups
+ * - Unicode NFC normalization
+ * - Remove zero-width/invisible chars
+ * - Trim whitespace
+ */
 export function normalizeDictionaryWord(word: string): string {
-  return word.replace(INVISIBLE_RE, "").normalize("NFC").trim();
+  return word
+    .normalize("NFC")
+    .replace(/[\u200b-\u200f\ufeff]/g, "")
+    .trim();
 }
 
 export function buildDictionaryMap(
@@ -40,9 +52,9 @@ export function buildDictionaryMap(
 ): Map<string, DictionaryEntry> {
   const map = new Map<string, DictionaryEntry>();
   for (const entry of entries) {
-    const key = normalizeDictionaryWord(entry.word);
-    if (!key) continue;
-    map.set(key, { ...entry, word: key });
+    const normalizedWord = normalizeDictionaryWord(entry.word);
+    if (!normalizedWord) continue;
+    map.set(normalizedWord, { ...entry, word: normalizedWord });
   }
   return map;
 }
@@ -52,9 +64,9 @@ export function dictionaryLookup(
   dictionaryMap: Map<string, DictionaryEntry>,
   word: string,
 ): DictionaryEntry | null {
-  const key = normalizeDictionaryWord(word);
-  if (!key) return null;
-  return dictionaryMap.get(key) ?? null;
+  const substring = normalizeDictionaryWord(word);
+  if (!substring) return null;
+  return dictionaryMap.get(substring) ?? null;
 }
 
 function buildCharacterBreakdown(
@@ -84,8 +96,8 @@ export function segmentChinese(
   while (i < chars.length) {
     const ch = chars[i];
 
-    // Keep punctuation / latin / spaces as single unknown tokens.
-    if (!isHanziChar(ch)) {
+    // Punctuation and other non-Hanzi as single unknown tokens.
+    if (isPunctuation(ch) || !isHanziChar(ch)) {
       results.push({ text: ch, entry: null, isKnown: false });
       i += 1;
       continue;
