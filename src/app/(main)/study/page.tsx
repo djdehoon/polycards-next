@@ -251,6 +251,7 @@ function StudySession() {
   const [prefsReady, setPrefsReady] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
+  const [uitlegOpen, setUitlegOpen] = useState(false);
 
   useEffect(() => {
     startTransition(() => {
@@ -572,6 +573,8 @@ function StudySession() {
             isFlipped={isFlipped}
             onFlip={setIsFlipped}
             disabled={saving}
+            uitlegOpen={uitlegOpen}
+            onUitlegOpenChange={setUitlegOpen}
           />
           {!isFlipped ? (
             <button

@@ -25,6 +25,8 @@ export type FlipCardProps = {
   isFlipped?: boolean;
   onFlip?: (flipped: boolean) => void;
   disabled?: boolean;
+  uitlegOpen?: boolean;
+  onUitlegOpenChange?: (open: boolean) => void;
 };
 
 type SpeakingSide = "front" | "back";
@@ -309,6 +311,8 @@ export function FlipCard({
   isFlipped: isFlippedProp,
   onFlip,
   disabled = false,
+  uitlegOpen: uitlegOpenProp,
+  onUitlegOpenChange,
 }: FlipCardProps) {
   const [internalFlipped, setInternalFlipped] = useState(false);
   const isControlled = isFlippedProp !== undefined;
@@ -317,6 +321,9 @@ export function FlipCard({
   const [isSpeaking, setIsSpeaking] = useState<SpeakingSide | null>(null);
   const [speechAvailable, setSpeechAvailable] = useState(false);
   const [speakError, setSpeakError] = useState<string | null>(null);
+  const [internalUitlegOpen, setInternalUitlegOpen] = useState(false);
+  const uitlegOpen = uitlegOpenProp ?? internalUitlegOpen;
+  const setUitlegOpen = onUitlegOpenChange ?? setInternalUitlegOpen;
 
   const word = studyWord.word;
   const translation = studyWord.translation;
@@ -509,17 +516,6 @@ export function FlipCard({
             </ExampleBar>
           )}
 
-          {hasWordAnalysis(languagePair) &&
-          frontContent.lang === "zh-CN" &&
-          frontContent.exampleSentence.trim() ? (
-            <SentenceAnalysis
-              key={`front-${frontContent.exampleSentence}`}
-              chineseSentence={frontContent.exampleSentence}
-              pinyinSentence={example_translation2 || ""}
-              languagePairCode={languagePair}
-            />
-          ) : null}
-
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {frontContent.mainWord.trim() && (
               <SpeakButton
@@ -639,17 +635,6 @@ export function FlipCard({
             </ExampleBar>
           )}
 
-          {hasWordAnalysis(languagePair) &&
-          backContent.lang === "zh-CN" &&
-          backContent.exampleSentence.trim() ? (
-            <SentenceAnalysis
-              key={`back-${backContent.exampleSentence}`}
-              chineseSentence={backContent.exampleSentence}
-              pinyinSentence={example_translation2 || ""}
-              languagePairCode={languagePair}
-            />
-          ) : null}
-
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             {backContent.mainWord.trim() && (
               <SpeakButton
@@ -695,6 +680,13 @@ export function FlipCard({
     );
   }
 
+  const zhAnalysisSentence =
+    frontContent.lang === "zh-CN"
+      ? frontContent.exampleSentence
+      : backContent.lang === "zh-CN"
+        ? backContent.exampleSentence
+        : "";
+
   return (
     <div className="[perspective:1200px]">
       <div
@@ -720,6 +712,15 @@ export function FlipCard({
           {renderBackFace(!isFlipped)}
         </div>
       </div>
+      {hasWordAnalysis(languagePair) && zhAnalysisSentence.trim() ? (
+        <SentenceAnalysis
+          chineseSentence={zhAnalysisSentence}
+          pinyinSentence={example_translation2 || ""}
+          languagePairCode={languagePair}
+          isExpanded={uitlegOpen}
+          onExpandedChange={setUitlegOpen}
+        />
+      ) : null}
       {speakError ? (
         <p
           role="alert"

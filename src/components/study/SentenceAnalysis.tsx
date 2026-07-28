@@ -24,6 +24,8 @@ type SentenceAnalysisProps = {
   chineseSentence: string;
   pinyinSentence?: string;
   languagePairCode: string;
+  isExpanded: boolean;
+  onExpandedChange: (open: boolean) => void;
 };
 
 function hasHanzi(text: string): boolean {
@@ -56,29 +58,35 @@ function segmentDisplay(segment: SegmentResult) {
 export function SentenceAnalysis({
   chineseSentence,
   languagePairCode,
+  isExpanded,
+  onExpandedChange,
 }: SentenceAnalysisProps) {
   const [segments, setSegments] = useState<SegmentResult[]>([]);
   const [stats, setStats] = useState<ReturnType<typeof getAnalysisStats> | null>(
     null,
   );
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [analyzedSentence, setAnalyzedSentence] = useState<string | null>(null);
   const enabled = hasWordAnalysis(languagePairCode);
 
   useEffect(() => {
-    if (!enabled || !isExpanded || segments.length > 0) return;
+    if (!enabled || !isExpanded) return;
+    if (analyzedSentence === chineseSentence) return;
 
     let cancelled = false;
 
     async function analyzeSentence() {
       setIsLoading(true);
       setLoadError(null);
+      setSegments([]);
+      setStats(null);
       try {
         if (!hasHanzi(chineseSentence)) {
           if (!cancelled) {
             setSegments([]);
             setStats(null);
+            setAnalyzedSentence(chineseSentence);
             setIsLoading(false);
           }
           return;
@@ -99,6 +107,7 @@ export function SentenceAnalysis({
           );
           setSegments([]);
           setStats(null);
+          setAnalyzedSentence(chineseSentence);
           return;
         }
 
@@ -108,6 +117,7 @@ export function SentenceAnalysis({
         const result = segmentChinese(chineseSentence, dictMap);
         setSegments(result);
         setStats(getAnalysisStats(result));
+        setAnalyzedSentence(chineseSentence);
       } catch (error) {
         console.error("Error analyzing sentence:", error);
         if (!cancelled) {
@@ -118,6 +128,7 @@ export function SentenceAnalysis({
           );
           setSegments([]);
           setStats(null);
+          setAnalyzedSentence(chineseSentence);
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -128,13 +139,19 @@ export function SentenceAnalysis({
     return () => {
       cancelled = true;
     };
-  }, [enabled, isExpanded, segments.length, chineseSentence, languagePairCode]);
+  }, [
+    enabled,
+    isExpanded,
+    analyzedSentence,
+    chineseSentence,
+    languagePairCode,
+  ]);
 
   if (!enabled) return null;
 
   function handleToggle(e: MouseEvent) {
     e.stopPropagation();
-    setIsExpanded((open) => !open);
+    onExpandedChange(!isExpanded);
   }
 
   function handleAudioClick(e: MouseEvent, text: string) {
