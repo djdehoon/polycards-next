@@ -5,19 +5,19 @@ import {
 } from "@/lib/study-words";
 
 export function StudyCategoryBadge({
-  category,
+  title,
   className = "absolute left-3 top-3",
 }: {
-  category: string | null | undefined;
+  title: string | null | undefined;
   className?: string;
 }) {
-  if (!category) return null;
+  if (!title?.trim()) return null;
 
   return (
     <span
       className={`rounded-md bg-zinc-900/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400 ring-1 ring-zinc-700 ${className}`}
     >
-      {category}
+      {title.trim()}
     </span>
   );
 }

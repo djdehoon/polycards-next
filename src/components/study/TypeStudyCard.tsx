@@ -103,7 +103,7 @@ export function TypeStudyCard({
   return (
     <div className="relative rounded-2xl border border-zinc-700 bg-zinc-800 px-5 py-6 shadow-xl">
       <StudyCategoryBadge
-        category={studyWord.category}
+        title={studyWord.deckTitle}
         className="absolute left-3 top-3"
       />
 

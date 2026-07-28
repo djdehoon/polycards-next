@@ -13,8 +13,8 @@ function extractHanzi(text: string): string[] {
   return Array.from(text.matchAll(/[\u4e00-\u9fff]/gu)).map((m) => m[0]);
 }
 
-const SIZE = 320;
-const DELAY_MS = 400;
+const SIZE = 200;
+const DELAY_MS = 600;
 
 export function ChineseStrokeOrder({ characters }: { characters: string }) {
   const chars = extractHanzi(characters);
@@ -46,9 +46,9 @@ export function ChineseStrokeOrder({ characters }: { characters: string }) {
           showOutline: true,
           strokeColor: "#34d399",
           outlineColor: "#3f3f46",
-          strokeAnimationSpeed: 3,
-          delayBetweenStrokes: 200,
-          delayBetweenLoops: 500,
+          strokeAnimationSpeed: 1,
+          delayBetweenStrokes: 400,
+          delayBetweenLoops: 800,
         }) as HanziWriterInstance;
         await writer.hideCharacter({ duration: 0 });
         writers.push(writer);
@@ -109,7 +109,7 @@ export function ChineseStrokeOrder({ characters }: { characters: string }) {
                 ref={(el) => {
                   containerRefs.current[i] = el;
                 }}
-                className="h-[320px] w-[320px] rounded-lg bg-zinc-900/80"
+                className="h-[200px] w-[200px] rounded-lg bg-zinc-900/80"
                 aria-label={`Stroke order voor ${char}`}
               />
             ))}

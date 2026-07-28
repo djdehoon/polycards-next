@@ -45,7 +45,6 @@ export interface LanguagePair {
     language_pair_id: string;  // ← NEW!
     word: string;              // Dutch
     translation: string;       // Ukrainian
-    category: string | null;   // ← NEW!
     phonetic: string | null;   // ← NEW!
     example_word: string | null;        // ← NEW! (changed from example_term)
     example_translation: string | null; // ← NEW!
@@ -61,7 +60,6 @@ export interface LanguagePair {
     language_pair_id: string;
     word: string;
     translation: string;
-    category: string;
     phonetic: string;
     example_word: string;
     example_translation: string;
@@ -79,7 +77,6 @@ export interface LanguagePair {
       language_pair_id: row.language_pair_id,
       word: row.word,
       translation: row.translation,
-      category: row.category || '',
       phonetic: row.phonetic || '',
       example_word: row.example_word || '',
       example_translation: row.example_translation || '',

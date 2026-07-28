@@ -324,14 +324,12 @@ export function FlipCard({
   const example_translation = studyWord.example_translation ?? "";
   const example_translation2 = studyWord.example_translation2 ?? "";
   const phonetic = studyWord.phonetic ?? "";
-  const category = studyWord.category ?? "";
-  const deckTitle = studyWord.deckTitle ?? category;
+  const displayTitle = (studyWord.deckTitle ?? "").trim();
   const pairMeta = getLanguagePairMeta(languagePair);
   const isTargetNl = direction === "target-nl";
   const isZh = languagePair === "nl-zh";
   const formattedPhonetic = formatPhonetic(phonetic);
   const displayEmoji = (studyWord.emoji ?? "").trim() || "📝";
-  const displayTitle = deckTitle || category;
 
   const frontContent = buildFaceContent(
     direction,
