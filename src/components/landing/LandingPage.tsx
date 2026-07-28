@@ -38,12 +38,6 @@ export function LandingPage({ appVersion }: Props) {
         <span className="text-lg font-semibold tracking-tight">PolyCards</span>
         <nav className="flex items-center gap-3 text-sm">
           <Link
-            href="#choose-language"
-            className="rounded-lg bg-emerald-500/15 px-3 py-1.5 font-semibold text-emerald-400 transition hover:bg-emerald-500/25 hover:text-emerald-300"
-          >
-            V2 Apps
-          </Link>
-          <Link
             href="/theories"
             className="text-zinc-400 transition hover:text-emerald-400"
           >
