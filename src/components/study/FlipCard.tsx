@@ -515,6 +515,7 @@ export function FlipCard({
           frontContent.lang === "zh-CN" &&
           frontContent.exampleSentence.trim() ? (
             <SentenceAnalysis
+              key={`front-${frontContent.exampleSentence}`}
               chineseSentence={frontContent.exampleSentence}
               pinyinSentence={example_translation2 || ""}
               languagePairCode={languagePair}
@@ -644,6 +645,7 @@ export function FlipCard({
           backContent.lang === "zh-CN" &&
           backContent.exampleSentence.trim() ? (
             <SentenceAnalysis
+              key={`back-${backContent.exampleSentence}`}
               chineseSentence={backContent.exampleSentence}
               pinyinSentence={example_translation2 || ""}
               languagePairCode={languagePair}
