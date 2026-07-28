@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 import { useChineseSegmenter } from "@/hooks/useChineseSegmenter";
+import type { SegmentResult } from "@/lib/chineseSegmenter";
+
+function segmentColorClass(segment: SegmentResult): string {
+  if (!segment.isKnown) {
+    return "border-b-2 border-red-500 text-zinc-300";
+  }
+  const charCount = Array.from(segment.text).length;
+  if (charCount >= 2) {
+    return "border-b-2 border-amber-400 text-amber-100";
+  }
+  return "border-b-2 border-emerald-500 text-zinc-100";
+}
 
 export function ChineseAnalyzer() {
   const [text, setText] = useState("");
@@ -26,8 +38,8 @@ export function ChineseAnalyzer() {
         Chinese zin analyseren
       </h2>
       <p className="mt-1 text-sm text-zinc-400">
-        Greedy longest-match (max 4 karakters) via dictionary.word — bv. 自行车
-        als één phrase i.p.v. 自+行+车.
+        Greedy longest-match (max 4) — groen = 1 teken, geel = phrase, rood =
+        onbekend. Tap voor details + karakter-breakdown.
       </p>
 
       <textarea
@@ -65,11 +77,9 @@ export function ChineseAnalyzer() {
                 key={`${segment.text}-${index}`}
                 type="button"
                 onClick={() => handleSegmentClick(index)}
-                className={`zh-sentence cursor-pointer rounded px-0.5 text-xl transition-colors hover:bg-zinc-800 ${
-                  segment.isKnown
-                    ? "border-b-2 border-emerald-500 text-zinc-100"
-                    : "border-b-2 border-red-500 text-zinc-300"
-                } ${activeIndex === index ? "bg-zinc-800" : ""}`}
+                className={`zh-sentence cursor-pointer rounded px-0.5 text-xl transition-colors hover:bg-zinc-800 ${segmentColorClass(segment)} ${
+                  activeIndex === index ? "bg-zinc-800" : ""
+                }`}
               >
                 {segment.text}
               </button>
@@ -77,38 +87,69 @@ export function ChineseAnalyzer() {
           </div>
 
           {activeSegment ? (
-            <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-950 p-4">
+            <div className="mt-4 max-h-72 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-950 p-4 sm:max-h-96">
               {activeSegment.isKnown && activeSegment.entry ? (
-                <dl className="grid gap-2 text-sm">
-                  <div>
-                    <dt className="text-zinc-500">Woord</dt>
-                    <dd className="zh-sentence text-lg font-semibold text-zinc-100">
-                      {activeSegment.text}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-500">Phonetic</dt>
-                    <dd className="text-zinc-200">{activeSegment.entry.phonetic}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-500">Betekenis</dt>
-                    <dd className="text-zinc-200">
-                      {activeSegment.entry.meaning_nl}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-500">Woordsoort</dt>
-                    <dd className="text-emerald-400/90">
-                      {activeSegment.entry.word_type}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-500">Niveau</dt>
-                    <dd className="text-zinc-200">
-                      {activeSegment.entry.proficiency_level || "—"}
-                    </dd>
-                  </div>
-                </dl>
+                <>
+                  <dl className="grid gap-2 text-sm">
+                    <div>
+                      <dt className="text-zinc-500">Karakters</dt>
+                      <dd className="zh-sentence text-lg font-semibold text-zinc-100">
+                        {activeSegment.text}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">Pinyin</dt>
+                      <dd className="text-zinc-200">
+                        {activeSegment.entry.phonetic}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">Betekenis</dt>
+                      <dd className="text-zinc-200">
+                        {activeSegment.entry.meaning_nl}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">HSK level</dt>
+                      <dd className="text-zinc-200">
+                        {activeSegment.entry.proficiency_level || "—"}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {activeSegment.characters &&
+                  activeSegment.characters.length >= 2 ? (
+                    <>
+                      <hr className="my-4 border-zinc-700" />
+                      <p className="mb-2 text-sm font-semibold text-zinc-200">
+                        📖 Karakters:
+                      </p>
+                      <ul className="flex flex-col gap-1.5 text-sm text-zinc-300">
+                        {activeSegment.characters.map((item, i) => (
+                          <li
+                            key={`${item.char}-${i}`}
+                            className="flex flex-wrap items-baseline gap-x-1.5"
+                          >
+                            <span className="zh-sentence text-base font-semibold text-zinc-100">
+                              {item.char}
+                            </span>
+                            <span className="italic text-zinc-400">
+                              {item.entry?.phonetic || "?"}
+                            </span>
+                            <span className="text-zinc-600">·</span>
+                            <span>
+                              {item.entry?.meaning_nl || "Onbekend"}
+                            </span>
+                            <span className="text-zinc-600">·</span>
+                            <span className="text-zinc-400">
+                              {item.entry?.proficiency_level || "—"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : null}
+                </>
               ) : (
                 <p className="text-sm text-zinc-300">
                   <span className="zh-sentence font-semibold">

@@ -6,10 +6,17 @@ export interface DictionaryEntry {
   proficiency_level: string;
 }
 
+export interface SegmentCharacter {
+  char: string;
+  entry: DictionaryEntry | null;
+}
+
 export interface SegmentResult {
   text: string;
   entry: DictionaryEntry | null;
   isKnown: boolean;
+  /** Per-character lookups for multi-char phrases (2+). */
+  characters?: SegmentCharacter[];
 }
 
 /** Max characters for a single dictionary phrase match (greedy). */
@@ -39,6 +46,18 @@ export function dictionaryLookup(
   word: string,
 ): DictionaryEntry | null {
   return dictionaryMap.get(word) ?? null;
+}
+
+function buildCharacterBreakdown(
+  phrase: string,
+  dictionaryMap: Map<string, DictionaryEntry>,
+): SegmentCharacter[] | undefined {
+  const chars = Array.from(phrase);
+  if (chars.length < 2) return undefined;
+  return chars.map((char) => ({
+    char,
+    entry: dictionaryLookup(dictionaryMap, char),
+  }));
 }
 
 /**
@@ -77,6 +96,7 @@ export function segmentChinese(
           text: candidate,
           entry,
           isKnown: true,
+          characters: buildCharacterBreakdown(candidate, dictionaryMap),
         });
         i += len;
         matched = true;
