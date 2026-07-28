@@ -1,5 +1,8 @@
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import type { DictionaryEntry } from "@/lib/chineseSegmenter";
+import {
+  normalizeDictionaryWord,
+  type DictionaryEntry,
+} from "@/lib/chineseSegmenter";
 
 type DictionaryRow = {
   word: string;
@@ -12,7 +15,7 @@ type DictionaryRow = {
 const PAGE_SIZE = 1000;
 
 function normalizeEntry(row: DictionaryRow): DictionaryEntry | null {
-  const word = row.word?.trim();
+  const word = normalizeDictionaryWord(row.word ?? "");
   if (!word) return null;
   return {
     word,
@@ -36,6 +39,7 @@ export async function fetchDictionaryEntries(
       .from("dictionary")
       .select("word, phonetic, meaning_nl, word_type, proficiency_level")
       .eq("language_pair_code", languagePairCode)
+      .order("word", { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
 
     if (error) throw error;

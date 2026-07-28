@@ -23,9 +23,16 @@ export interface SegmentResult {
 export const MAX_PHRASE_LENGTH = 4;
 
 const HANZI_RE = /[\u3400-\u9fff]/u;
+/** Zero-width / BOM / soft hyphen and similar invisibles. */
+const INVISIBLE_RE = /[\u200b-\u200d\ufeff\u00ad]/gu;
 
 function isHanziChar(ch: string): boolean {
   return HANZI_RE.test(ch);
+}
+
+/** Normalize dictionary keys and lookup queries (trim, NFC, strip invisibles). */
+export function normalizeDictionaryWord(word: string): string {
+  return word.replace(INVISIBLE_RE, "").normalize("NFC").trim();
 }
 
 export function buildDictionaryMap(
@@ -33,7 +40,7 @@ export function buildDictionaryMap(
 ): Map<string, DictionaryEntry> {
   const map = new Map<string, DictionaryEntry>();
   for (const entry of entries) {
-    const key = entry.word.trim();
+    const key = normalizeDictionaryWord(entry.word);
     if (!key) continue;
     map.set(key, { ...entry, word: key });
   }
@@ -45,7 +52,9 @@ export function dictionaryLookup(
   dictionaryMap: Map<string, DictionaryEntry>,
   word: string,
 ): DictionaryEntry | null {
-  return dictionaryMap.get(word) ?? null;
+  const key = normalizeDictionaryWord(word);
+  if (!key) return null;
+  return dictionaryMap.get(key) ?? null;
 }
 
 function buildCharacterBreakdown(
@@ -68,7 +77,7 @@ export function segmentChinese(
   text: string,
   dictionaryMap: Map<string, DictionaryEntry>,
 ): SegmentResult[] {
-  const chars = Array.from(text);
+  const chars = Array.from(normalizeDictionaryWord(text));
   const results: SegmentResult[] = [];
   let i = 0;
 
