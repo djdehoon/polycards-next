@@ -34,6 +34,12 @@ function isPunctuation(ch: string): boolean {
   return PUNCTUATION.test(ch);
 }
 
+/** True when the whole segment is punctuation (no dictionary card needed). */
+export function isPunctuationSegment(text: string): boolean {
+  const chars = Array.from(text);
+  return chars.length > 0 && chars.every((ch) => isPunctuation(ch));
+}
+
 /**
  * Normalize Chinese text for consistent dictionary lookups
  * - Unicode NFC normalization
@@ -142,8 +148,9 @@ export function parseHskLevel(level: string | null | undefined): 1 | 2 | 3 | nul
 }
 
 export function getAnalysisStats(segments: SegmentResult[]) {
-  const known = segments.filter((s) => s.isKnown);
-  const unknown = segments.filter((s) => !s.isKnown);
+  const lexical = segments.filter((s) => !isPunctuationSegment(s.text));
+  const known = lexical.filter((s) => s.isKnown);
+  const unknown = lexical.filter((s) => !s.isKnown);
 
   let hsk1 = 0;
   let hsk2 = 0;
@@ -156,12 +163,12 @@ export function getAnalysisStats(segments: SegmentResult[]) {
   }
 
   return {
-    total: segments.length,
+    total: lexical.length,
     known: known.length,
     unknown: unknown.length,
     coverage:
-      segments.length > 0
-        ? Math.round((known.length / segments.length) * 100)
+      lexical.length > 0
+        ? Math.round((known.length / lexical.length) * 100)
         : 0,
     unknownWords: unknown.map((s) => s.text),
     hskBreakdown: { hsk1, hsk2, hsk3 },

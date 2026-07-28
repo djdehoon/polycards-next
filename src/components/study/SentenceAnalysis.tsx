@@ -4,6 +4,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import {
   buildDictionaryMap,
   getAnalysisStats,
+  isPunctuationSegment,
   segmentChinese,
   type SegmentResult,
 } from "@/lib/chineseSegmenter";
@@ -37,6 +38,9 @@ function segmentDisplay(segment: SegmentResult) {
 }
 
 function segmentUnderlineClass(segment: SegmentResult): string {
+  if (isPunctuationSegment(segment.text)) {
+    return "text-zinc-500";
+  }
   if (!segment.isKnown) {
     return "border-b-2 border-red-500 text-zinc-400";
   }
@@ -196,7 +200,9 @@ export function SentenceAnalysis({
                     ))}
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    {segments.map((segment, index) => {
+                    {segments
+                      .filter((segment) => !isPunctuationSegment(segment.text))
+                      .map((segment, index) => {
                       const word = segmentDisplay(segment);
                       const showBreakdown =
                         Boolean(segment.characters) &&

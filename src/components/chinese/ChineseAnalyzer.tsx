@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useChineseSegmenter } from "@/hooks/useChineseSegmenter";
-import type { SegmentResult } from "@/lib/chineseSegmenter";
+import {
+  isPunctuationSegment,
+  type SegmentResult,
+} from "@/lib/chineseSegmenter";
 
 function segmentColorClass(segment: SegmentResult): string {
+  if (isPunctuationSegment(segment.text)) {
+    return "text-zinc-500";
+  }
   if (!segment.isKnown) {
     return "border-b-2 border-red-500 text-zinc-300";
   }
@@ -29,6 +35,11 @@ export function ChineseAnalyzer() {
   }
 
   function handleSegmentClick(index: number) {
+    const segment = segments[index];
+    if (!segment || isPunctuationSegment(segment.text)) {
+      setActiveIndex(null);
+      return;
+    }
     setActiveIndex((current) => (current === index ? null : index));
   }
 
@@ -77,7 +88,12 @@ export function ChineseAnalyzer() {
                 key={`${segment.text}-${index}`}
                 type="button"
                 onClick={() => handleSegmentClick(index)}
-                className={`zh-sentence cursor-pointer rounded px-0.5 text-xl transition-colors hover:bg-zinc-800 ${segmentColorClass(segment)} ${
+                disabled={isPunctuationSegment(segment.text)}
+                className={`zh-sentence rounded px-0.5 text-xl transition-colors ${
+                  isPunctuationSegment(segment.text)
+                    ? "cursor-default"
+                    : "cursor-pointer hover:bg-zinc-800"
+                } ${segmentColorClass(segment)} ${
                   activeIndex === index ? "bg-zinc-800" : ""
                 }`}
               >
