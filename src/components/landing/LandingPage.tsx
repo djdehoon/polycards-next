@@ -71,6 +71,12 @@ export function LandingPage({ appVersion }: Props) {
           <p className="mt-4 text-xs font-medium tracking-wide text-zinc-500">
             {versionLabel}
           </p>
+          <Link
+            href="#choose-language"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+          >
+            New V2 Apps →
+          </Link>
         </section>
 
         <OgImageBanner />
