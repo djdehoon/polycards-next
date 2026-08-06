@@ -2,7 +2,7 @@ export interface DictionaryEntry {
   word: string;
   phonetic: string;
   meaning_nl: string;
-  word_type: string;
+  word_type_nl: string;
   proficiency_level: string;
 }
 

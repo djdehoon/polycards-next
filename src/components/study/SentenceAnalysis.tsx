@@ -32,7 +32,7 @@ function segmentDisplay(segment: SegmentResult) {
     word: segment.text,
     phonetic: "?",
     meaning_nl: "Onbekend",
-    word_type: "Onbekend",
+    word_type_nl: "Onbekend",
     proficiency_level: "",
   };
 }
@@ -231,7 +231,7 @@ export function SentenceAnalysis({
                               </span>
                               <span className="text-zinc-600">·</span>
                               <span className="text-xs text-emerald-400/90">
-                                {word.word_type}
+                                {word.word_type_nl}
                               </span>
                               {word.proficiency_level ? (
                                 <>

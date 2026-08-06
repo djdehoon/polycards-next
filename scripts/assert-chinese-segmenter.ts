@@ -20,7 +20,7 @@ function entry(
     word,
     phonetic: "",
     meaning_nl,
-    word_type: "",
+    word_type_nl: "",
     proficiency_level: "",
   };
 }

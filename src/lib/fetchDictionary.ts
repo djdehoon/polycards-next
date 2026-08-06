@@ -8,7 +8,7 @@ type DictionaryRow = {
   word: string;
   phonetic: string | null;
   meaning_nl: string | null;
-  word_type: string | null;
+  word_type_nl: string | null;
   proficiency_level: string | null;
 };
 
@@ -21,7 +21,7 @@ function normalizeEntry(row: DictionaryRow): DictionaryEntry | null {
     word,
     phonetic: row.phonetic?.trim() || "?",
     meaning_nl: row.meaning_nl?.trim() || "Onbekend",
-    word_type: row.word_type?.trim() || "Onbekend",
+    word_type_nl: row.word_type_nl?.trim() || "Onbekend",
     proficiency_level: row.proficiency_level?.trim() || "",
   };
 }
@@ -37,7 +37,7 @@ export async function fetchDictionaryEntries(
   for (;;) {
     const { data, error } = await supabase
       .from("dictionary")
-      .select("word, phonetic, meaning_nl, word_type, proficiency_level")
+      .select("word, phonetic, meaning_nl, word_type_nl, proficiency_level")
       .eq("language_pair_code", languagePairCode)
       .order("word", { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
